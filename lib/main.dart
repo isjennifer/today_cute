@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'home.dart';
 import 'search.dart';
+import 'login.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,6 +38,7 @@ class _HomePageState extends State<PageFrame> {
   static const List<Widget> _widgetOptions = <Widget>[
     HomePage(),
     SearchPage(),
+    LoginPage(),
   ];
 
   void _onItemTapped(int index) {

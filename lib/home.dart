@@ -31,7 +31,7 @@ class HomeBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         width: double.infinity,
-        height: 550,
+        height: 530,
         color: Colors.white,
         margin: EdgeInsets.fromLTRB(0, 30, 0, 20),
         child: Stack(
