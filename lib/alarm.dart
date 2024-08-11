@@ -71,7 +71,7 @@ class AlarmBoard extends StatelessWidget {
                 Text('귀여운게 최고야 님이'),
               ]),
               Row(children: [
-                Text('당신의 게시물을 '),
+                Text('회원님의 게시물을 '),
                 Icon(
                   Icons.favorite,
                   size: 17,
@@ -83,6 +83,7 @@ class AlarmBoard extends StatelessWidget {
           ),
           Icon(
             Icons.close,
+            size: 20,
             color: Colors.grey,
           ),
         ],
