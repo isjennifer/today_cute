@@ -8,6 +8,7 @@ import 'search.dart';
 import 'login.dart';
 import 'upload.dart';
 import 'alarm.dart';
+import 'profile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,7 +45,7 @@ class _HomePageState extends State<PageFrame> {
     SearchPage(),
     UploadPage(),
     AlarmPage(),
-    LoginPage(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
