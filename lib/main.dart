@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
       title: '오늘의 귀여움',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.white,
         textTheme: GoogleFonts.ibmPlexSansKrTextTheme(
           Theme.of(context).textTheme, // 기존 테마를 바탕으로 폰트 적용
         ),
