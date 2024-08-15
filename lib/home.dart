@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -24,14 +25,21 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class HomeBody extends StatelessWidget {
+class HomeBody extends StatefulWidget {
   const HomeBody({super.key});
+
+  @override
+  _HomeBodyState createState() => _HomeBodyState();
+}
+
+class _HomeBodyState extends State<HomeBody> {
+  final PageController _pageController = PageController();
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: double.infinity,
-        height: 530,
+        height: 550,
         color: Colors.white,
         margin: EdgeInsets.fromLTRB(0, 30, 0, 20),
         child: Stack(
@@ -41,7 +49,7 @@ class HomeBody extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  height: 20,
+                  height: 25,
                   color: Color(0XFFFFFFFDE),
                 ),
                 Container(
@@ -72,9 +80,31 @@ class HomeBody extends StatelessWidget {
                   width: double.infinity,
                   height: 340,
                   child: ClipRect(
-                    child: Image.asset(
-                      'assets/dog.jpg',
-                      fit: BoxFit.cover,
+                    child: PageView(
+                      controller: _pageController,
+                      children: [
+                        Image.asset(
+                          'assets/dog.jpg',
+                          fit: BoxFit.cover,
+                        ),
+                        Image.asset(
+                          'assets/cat.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: SmoothPageIndicator(
+                    controller: _pageController, // PageView의 controller
+                    count: 2, // 이미지 개수에 맞게 설정
+                    effect: ExpandingDotsEffect(
+                      dotHeight: 5.0,
+                      dotWidth: 5.0,
+                      activeDotColor: Colors.black,
+                      dotColor: Colors.grey,
                     ),
                   ),
                 ),
