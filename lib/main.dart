@@ -9,8 +9,14 @@ import 'login.dart';
 import 'upload.dart';
 import 'alarm.dart';
 import 'profile.dart';
+import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
+import 'dart:async';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  KakaoSdk.init(
+    nativeAppKey: 'c1798f129d4667f86161e6c3916a5d3b',
+  );
   runApp(const MyApp());
 }
 
@@ -28,7 +34,39 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme, // 기존 테마를 바탕으로 폰트 적용
         ),
       ),
-      home: PageFrame(),
+      home: SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Timer(Duration(seconds: 1), () {
+      // 3초 후에 PageFrame으로 이동
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => PageFrame()),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Image.asset(
+          'assets/logo_char_color.png',
+          width: 220,
+        ), // 로고 이미지 경로를 설정
+      ),
     );
   }
 }
@@ -46,7 +84,7 @@ class _HomePageState extends State<PageFrame> {
     SearchPage(),
     UploadPage(),
     AlarmPage(),
-    ProfilePage(),
+    LoginPage(),
   ];
 
   void _onItemTapped(int index) {
