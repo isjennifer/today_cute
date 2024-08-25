@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "582334193763",
+    "project_id": "kawaii-gallery",
+    "storage_bucket": "kawaii-gallery.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:582334193763:android:5306cd615f5e0ae18ed856",
+        "android_client_info": {
+          "package_name": "com.example.todayCute"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9mS_Xc5L1y3XIM9eSJK8odwjv0CrP_8w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:582334193763:android:4b2d7aa0a1180d6c8ed856",
+        "android_client_info": {
+          "package_name": "com.example.today_cute"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9mS_Xc5L1y3XIM9eSJK8odwjv0CrP_8w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

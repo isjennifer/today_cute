@@ -1,7 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:today_cute/alarm.dart';
+import 'package:today_cute/firebase_options.dart';
 import 'package:today_cute/upload.dart';
 import 'home.dart';
 import 'search.dart';
@@ -9,7 +10,11 @@ import 'login.dart';
 import 'upload.dart';
 import 'alarm.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
