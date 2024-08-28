@@ -30,8 +30,12 @@ void main() async {
       print('Message also contained a notification: ${message.notification}');
     }
   });
-  String? fcmToken = await FirebaseMessaging.instance.getToken();
-  print(fcmToken);
+  try {
+    String? fcmToken = await FirebaseMessaging.instance.getToken();
+    print(fcmToken);
+  } catch (exp) {
+    print("에러발생!!!!!!! $exp");
+  }
   runApp(const MyApp());
 }
 
