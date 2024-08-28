@@ -153,20 +153,21 @@ class _ImageBodyState extends State<ImageBody> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                margin: const EdgeInsets.symmetric(vertical: 10.0),
+                decoration: BoxDecoration(color: Colors.black),
                 width: double.infinity,
-                height: 340,
+                height: 600,
                 child: ClipRect(
                   child: PageView(
                     controller: _pageController,
                     children: [
                       Image.asset(
                         'assets/dog.jpg',
-                        fit: BoxFit.cover,
+                        // fit: BoxFit.cover,
                       ),
                       Image.asset(
                         'assets/cat.png',
-                        fit: BoxFit.cover,
+                        // fit: BoxFit.cover,
                       ),
                     ],
                   ),
@@ -346,12 +347,40 @@ class _VideoBodyState extends State<VideoBody> {
       }).catchError((error) {
         print('Error initializing video player: $error');
       });
+
+    // 비디오 플레이어의 상태가 변할 때마다 호출되는 리스너 추가
+    _videoController.addListener(() {
+      if (_videoController.value.isInitialized) {
+        setState(() {}); // 남은 시간을 업데이트하기 위해 setState 호출
+      }
+    });
   }
 
   @override
   void dispose() {
     _videoController.dispose(); // 메모리 누수를 방지하기 위해 컨트롤러를 해제합니다.
     super.dispose();
+  }
+
+  void _togglePlayPause() {
+    setState(() {
+      if (_videoController.value.isPlaying) {
+        _videoController.pause();
+      } else {
+        _videoController.play();
+      }
+    });
+  }
+
+  String _getRemainingTime() {
+    final duration = _videoController.value.duration;
+    final position = _videoController.value.position;
+    final remaining = duration - position;
+    final minutes =
+        remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds =
+        remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
   }
 
   @override
@@ -384,17 +413,48 @@ class _VideoBodyState extends State<VideoBody> {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                width: double.infinity,
-                height: 340,
-                child: ClipRect(
-                  child: _videoController.value.isInitialized
-                      ? AspectRatio(
-                          aspectRatio: _videoController.value.aspectRatio,
-                          child: VideoPlayer(_videoController),
-                        )
-                      : Center(child: CircularProgressIndicator()),
+              GestureDetector(
+                onTap: _togglePlayPause, // 클릭 시 재생 또는 일시정지
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 10.0),
+                      decoration: BoxDecoration(color: Colors.black),
+                      width: double.infinity,
+                      height: 600,
+                      child: ClipRect(
+                        child: _videoController.value.isInitialized
+                            ? Center(
+                                child: AspectRatio(
+                                  aspectRatio:
+                                      _videoController.value.aspectRatio,
+                                  child: VideoPlayer(_videoController),
+                                ),
+                              )
+                            : Center(child: CircularProgressIndicator()),
+                      ),
+                    ),
+                    if (_videoController.value.isInitialized)
+                      Positioned(
+                        bottom: 25,
+                        right: 20,
+                        child: Text(
+                          _getRemainingTime(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(2.0, 2.0), // 그림자의 위치
+                                blurRadius: 1.0, // 그림자의 흐림 정도
+                                color: Colors.black.withOpacity(0.5), // 그림자의 색상
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               Container(
