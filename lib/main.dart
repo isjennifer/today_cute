@@ -84,7 +84,7 @@ class _HomePageState extends State<PageFrame> {
     SearchPage(),
     UploadPage(),
     AlarmPage(),
-    LoginPage(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
