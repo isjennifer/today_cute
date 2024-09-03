@@ -22,13 +22,13 @@ void main() async {
   );
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
   // FCM 토큰 초기화 및 서버에 전송
   await _initializeFCM();
 
   // 백그라운드 알림 처리 설정
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  
+
   runApp(const MyApp());
 }
 
@@ -133,7 +133,8 @@ class _HomePageState extends State<PageFrame> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      if (index == 3) { // AlarmPage에 들어가면
+      if (index == 3) {
+        // AlarmPage에 들어가면
         _hasNewNotification = false; // 알림 아이콘 상태 초기화
       }
     });
@@ -155,16 +156,74 @@ class _HomePageState extends State<PageFrame> {
       }
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: Image.asset(
-            'assets/logo_color.png',
-            width: 150,
-          )),
+        backgroundColor: Colors.white,
+        title: Image.asset(
+          'assets/logo_color.png',
+          width: 150,
+        ),
+        actions: [
+          PopupMenuButton<int>(
+            icon: Image.asset(
+              'assets/feather.png',
+              width: 40,
+            ),
+            color: Colors.transparent,
+            shadowColor: Colors.transparent,
+            position: PopupMenuPosition.under,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 1,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  padding: EdgeInsets.symmetric(vertical: 30),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 2,
+                        offset: Offset(3, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/feather.png',
+                              width: 50,
+                            ),
+                            Text(
+                              '20',
+                              style: TextStyle(fontSize: 20),
+                            )
+                          ],
+                        ),
+                        ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: Icon(Icons.check),
+                            label: Text('출석체크')),
+                        ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: Icon(Icons.video_camera_back),
+                            label: Text('광고시청')),
+                      ]),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
@@ -194,7 +253,8 @@ class _HomePageState extends State<PageFrame> {
               'assets/alarm.png',
               width: 50,
             ),
-            label: 'alarm', // TODO: _hasNewNotification이 true인 경우 알람 이미지 위에 빨간점? 같은 걸로 표시해야함 
+            label:
+                'alarm', // TODO: _hasNewNotification이 true인 경우 알람 이미지 위에 빨간점? 같은 걸로 표시해야함
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
