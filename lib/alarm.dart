@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AlarmPage extends StatefulWidget {
@@ -12,60 +11,18 @@ class AlarmPage extends StatefulWidget {
 
 class _AlarmPageState extends State<AlarmPage> {
   List<AlarmBoard> _alarms = [];
-  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   void initState() {
     super.initState();
-
-    // 로컬 알림 초기화
-    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
-
-    const DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings();
-
-    const InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: initializationSettingsAndroid,
-            iOS: initializationSettingsDarwin);
-
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
     // 주기적으로 알림을 추가하는 타이머 설정
     Timer.periodic(Duration(seconds: 5), (timer) {
       // 서버에서 알림이 도착한 것처럼 새로운 알람 추가
       setState(() {
         _alarms.add(AlarmBoard());
-        _showNotification(); // 알람 추가 시 로컬 알림 표시
       });
     });
-  }
-
-  // 로컬 알림을 표시하는 함수
-  Future<void> _showNotification() async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'your channel id',
-      'your channel name',
-      // 'your channel description' 제거
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: false,
-    );
-
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      '새 알림',
-      '새로운 알람이 도착했습니다.',
-      platformChannelSpecifics,
-      payload: 'item x',
-    );
   }
 
   void _clearAllNotifications() {
