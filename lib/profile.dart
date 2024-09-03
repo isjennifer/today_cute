@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -14,41 +13,81 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // 현재 선택된 탭을 저장할 변수
   int _selectedTab = 0;
 
-  // 각 탭에 대응하는 이미지 목록
+// 각 탭에 대응하는 이미지 목록
   final List<List<String>> _images = [
-    List.generate(30, (index) => 'assets/uploaded_$index.png'), // 업로드한 게시물 이미지
-    List.generate(30, (index) => 'assets/liked_$index.jpg'), // 좋아한 게시물 이미지
-    List.generate(30, (index) => 'assets/saved_$index.jpg'), // 저장한 게시물 이미지
+    [], // 업로드한 게시물 이미지 리스트
+    [], // 좋아한 게시물 이미지 리스트
   ];
 
-  // 현재 로드된 이미지 개수
-  int _loadedItemCount = 9;
-
-  // 스크롤 컨트롤러
+  int _loadedItemCount = 0;
   final ScrollController _scrollController = ScrollController();
+  bool _hasMoreData = true; // 더 불러올 데이터가 있는지 여부
 
   @override
   void initState() {
     super.initState();
+    _initializeImages(); // 초기 이미지를 로드합니다.
+
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        // 스크롤이 최하단에 도달했을 때 더 많은 아이템을 로드
-        _loadMoreItems();
+        if (_hasMoreData) {
+          _loadMoreItems();
+        }
       }
     });
   }
 
+// 초기 이미지를 로드하는 함수 (서버에서 10개 이미지를 가져오는 시뮬레이션)
+  void _initializeImages() {
+    setState(() {
+      // 여기서 서버에서 이미지를 불러오는 API 호출을 시뮬레이션합니다.
+      List<String> initialImages = [
+        'assets/uploaded_1.png',
+        'assets/uploaded_2.png',
+        'assets/uploaded_3.png',
+        'assets/uploaded_4.png',
+        'assets/uploaded_5.png',
+        'assets/uploaded_6.png',
+        'assets/uploaded_7.png',
+        'assets/uploaded_8.png',
+        'assets/uploaded_9.png',
+        'assets/uploaded_10.png',
+      ];
+
+      _images[_selectedTab].addAll(initialImages);
+
+      if (_images[_selectedTab].length >= 10) {
+        _hasMoreData = false; // 불러올 데이터가 더 이상 없음
+      }
+
+      _loadedItemCount = _images[_selectedTab].length;
+    });
+  }
+
+// 추가 이미지를 로드하는 함수
   void _loadMoreItems() {
     setState(() {
-      // 이미지를 9개씩 추가 로드
-      if (_loadedItemCount + 9 <= _images[_selectedTab].length) {
-        _loadedItemCount += 9;
-      } else {
-        _loadedItemCount = _images[_selectedTab].length;
+      int startIndex = _loadedItemCount + 1;
+      int endIndex = startIndex + 5;
+
+      // 서버에서 불러올 수 있는 최대 이미지 개수가 10개인 경우
+      if (endIndex > 10) {
+        endIndex = 10;
+        _hasMoreData = false; // 더 이상 불러올 데이터가 없음을 표시
+      }
+
+      for (int i = startIndex; i <= endIndex; i++) {
+        _images[_selectedTab].add('assets/uploaded_$i.png');
+      }
+
+      _loadedItemCount += (endIndex - startIndex + 1);
+
+      // 만약 모든 데이터를 로드했다면, 더 이상 로드하지 않음
+      if (_loadedItemCount >= 10) {
+        _hasMoreData = false;
       }
     });
   }
@@ -58,187 +97,162 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       body: SingleChildScrollView(
         controller: _scrollController,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: 700.0, // 최소 높이를 100으로 설정
-          ),
-          child: Container(
-            height: double.maxFinite, // 전체 높이를 지정합니다. 필요에 따라 조정하세요.
-            child: Stack(
-              children: [
-                Transform.translate(
-                  offset: Offset(0, 0),
-                  child: OverflowBox(
-                    alignment: Alignment.topRight,
-                    maxWidth: double.infinity,
-                    child: Container(
-                      child: Row(children: [
-                        IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SettingPage()),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.settings,
-                              color: Colors.grey,
-                              size: 30,
-                            )),
-                      ]),
+        child: Column(
+          children: [
+            Container(
+              height: 550,
+              child: Stack(
+                children: [
+                  Transform.translate(
+                    offset: Offset(0, 0),
+                    child: OverflowBox(
+                      alignment: Alignment.topRight,
+                      maxWidth: double.infinity,
+                      child: Container(
+                        child: Row(children: [
+                          IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SettingPage()),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.settings,
+                                color: Colors.grey,
+                                size: 30,
+                              )),
+                        ]),
+                      ),
                     ),
                   ),
-                ),
-                Transform.translate(
-                  offset: Offset(0, 160),
-                  child: OverflowBox(
-                    alignment: Alignment.topCenter,
-                    maxWidth: double.infinity,
-                    child: Container(
-                      width: 600,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        color: Color(0XFF99FFCC),
-                        borderRadius: BorderRadius.all(
-                          Radius.elliptical(500, 300),
+                  Transform.translate(
+                    offset: Offset(0, 160),
+                    child: OverflowBox(
+                      alignment: Alignment.topCenter,
+                      maxWidth: double.infinity,
+                      child: Container(
+                        width: 600,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          color: Color(0XFF99FFCC),
+                          borderRadius: BorderRadius.all(
+                            Radius.elliptical(500, 300),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Transform.translate(
-                  offset: Offset(0, 60),
-                  child: OverflowBox(
-                    alignment: Alignment.topCenter,
-                    maxWidth: double.infinity,
-                    child: Column(
+                  Transform.translate(
+                    offset: Offset(0, 60),
+                    child: OverflowBox(
+                      alignment: Alignment.topCenter,
+                      maxWidth: double.infinity,
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: Image.asset(
+                              'assets/dog.jpg',
+                              width: 180,
+                              height: 180,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          SizedBox(height: 30),
+                          Text(
+                            '임현주',
+                            style: TextStyle(fontSize: 30),
+                          ),
+                          Text(
+                            'hyeonjoo@naver.com',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Transform.translate(
+                    offset: Offset(0, 340),
+                    child: OverflowBox(
+                      alignment: Alignment.topCenter,
+                      maxWidth: double.infinity,
+                      child: Image.asset(
+                        'assets/character_color_big.png',
+                        width: 650,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: Image.asset(
-                            'assets/dog.jpg',
-                            width: 180,
-                            height: 180,
+                        GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedTab = 0;
+                              });
+                            },
+                            child: Icon(
+                              Icons.collections,
+                              color: _selectedTab == 0
+                                  ? Colors.black
+                                  : Colors.grey,
+                            )),
+                        GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedTab = 1;
+                              });
+                            },
+                            child: Icon(
+                              Icons.favorite,
+                              color: _selectedTab == 1
+                                  ? Colors.black
+                                  : Colors.grey,
+                            )),
+                      ],
+                    ),
+                  ),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: _loadedItemCount,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(_images[_selectedTab][index]),
                             fit: BoxFit.cover,
                           ),
                         ),
-                        SizedBox(height: 30),
-                        Text(
-                          '임현주',
-                          style: TextStyle(fontSize: 30),
-                        ),
-                        Text(
-                          'hyeonjoo@naver.com',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                ),
-                Transform.translate(
-                  offset: Offset(0, 340),
-                  child: OverflowBox(
-                    alignment: Alignment.topCenter,
-                    maxWidth: double.infinity,
-                    child: Image.asset(
-                      'assets/character_color_big.png',
-                      width: 650,
-                      fit: BoxFit.cover,
+                  if (_loadedItemCount < _images[_selectedTab].length)
+                    Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
                     ),
-                  ),
-                ),
-                Positioned(
-                  top: 550,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    width: double.infinity,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedTab = 0; // 업로드한 게시물 탭 선택
-                                      _loadedItemCount =
-                                          9; // 탭 변경 시 초기 로드 아이템 수 리셋
-                                    });
-                                  },
-                                  child: Icon(
-                                    Icons.collections,
-                                    color: _selectedTab == 0
-                                        ? Colors.black
-                                        : Colors.grey,
-                                  )),
-                              GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedTab = 1; // 좋아한 게시물 탭 선택
-                                      _loadedItemCount =
-                                          9; // 탭 변경 시 초기 로드 아이템 수 리셋
-                                    });
-                                  },
-                                  child: Icon(
-                                    Icons.favorite,
-                                    color: _selectedTab == 1
-                                        ? Colors.black
-                                        : Colors.grey,
-                                  )),
-                              GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedTab = 2; // 저장한 게시물 탭 선택
-                                      _loadedItemCount =
-                                          9; // 탭 변경 시 초기 로드 아이템 수 리셋
-                                    });
-                                  },
-                                  child: Icon(
-                                    Icons.bookmark,
-                                    color: _selectedTab == 2
-                                        ? Colors.black
-                                        : Colors.grey,
-                                  )),
-                            ],
-                          ),
-                        ),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 1,
-                          ),
-                          itemCount: _loadedItemCount,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image:
-                                      AssetImage(_images[_selectedTab][index]),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        if (_loadedItemCount < _images[_selectedTab].length)
-                          Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                  if (_loadedItemCount == 0) Text('로드할데이터없음')
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
