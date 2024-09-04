@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/io_client.dart';
 import 'package:today_cute/alarm.dart';
 import 'package:today_cute/upload.dart';
 import 'home.dart';
@@ -157,6 +158,53 @@ class _HomePageState extends State<PageFrame> {
     });
   }
 
+  Future<void> _howToUseFeatherModal(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // 모달 밖을 클릭하면 닫힘
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Container(
+            width: 400,
+            height: 300,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Q. 깃털은 어떻게 얻나요?',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text('A. 깃털을 얻는 방법은 3가지가 있어요.'),
+                  Text('첫번째, 출석체크를 하면 깃털 1개를 얻을 수 있어요.'),
+                  Text('두번째, 광고시청을 하면 깃털 1개를 얻을 수 있어요.'),
+                  Text('세번째, 게시물을 작성하면 깃털 1개를 얻을 수 있어요.'),
+                  SizedBox(height: 20),
+                  Text('Q. 깃털은 어디에 사용하나요?',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('A. 댓글을 작성하거나, 수정하거나, 삭제할 때마다 1개씩 사용해요.'),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // 모달 창 닫기
+                      },
+                      child: Text('이해했어요!'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,7 +218,7 @@ class _HomePageState extends State<PageFrame> {
           PopupMenuButton<int>(
             icon: Image.asset(
               'assets/feather.png',
-              width: 40,
+              width: 30,
             ),
             color: Colors.transparent,
             shadowColor: Colors.transparent,
@@ -180,7 +228,7 @@ class _HomePageState extends State<PageFrame> {
                 value: 1,
                 child: Container(
                   width: 200,
-                  height: 200,
+                  height: 250,
                   padding: EdgeInsets.symmetric(vertical: 30),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -194,29 +242,48 @@ class _HomePageState extends State<PageFrame> {
                     ],
                   ),
                   child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Text('내 깃털 개수 :'),
+                        TextButton(
+                          onPressed: () {
+                            _howToUseFeatherModal(context);
+                          },
+                          style: ButtonStyle(
+                              overlayColor: MaterialStateProperty.all<Color>(
+                                  Colors.transparent)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/feather.png',
+                                width: 50,
+                              ),
+                              Text(
+                                '20',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                              SizedBox(width: 10),
+                              Icon(
+                                Icons.help_outline,
+                                size: 20,
+                              )
+                            ],
+                          ),
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Image.asset(
-                              'assets/feather.png',
-                              width: 50,
-                            ),
-                            Text(
-                              '20',
-                              style: TextStyle(fontSize: 20),
-                            )
+                            ElevatedButton.icon(
+                                onPressed: () {},
+                                icon: Icon(Icons.check),
+                                label: Text('출석체크')),
+                            ElevatedButton.icon(
+                                onPressed: () {},
+                                icon: Icon(Icons.video_camera_back),
+                                label: Text('광고시청')),
                           ],
                         ),
-                        ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: Icon(Icons.check),
-                            label: Text('출석체크')),
-                        ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: Icon(Icons.video_camera_back),
-                            label: Text('광고시청')),
                       ]),
                 ),
               ),
