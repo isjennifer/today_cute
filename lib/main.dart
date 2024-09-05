@@ -3,18 +3,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/io_client.dart';
 import 'package:today_cute/screens/alarm.dart';
 import 'package:today_cute/screens/upload.dart';
-import 'home.dart';
-import 'search.dart';
-import 'login.dart';
-import 'upload.dart';
-import 'alarm.dart';
-import 'profile.dart';
+import 'screens/home.dart';
+import 'screens/search.dart';
+import 'screens/profile.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'dart:async';
-import '../firebase_options.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

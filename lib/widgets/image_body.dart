@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../utils/expandable_text.dart';
+import 'comment_drawer.dart';
 
 class ImageBody extends StatefulWidget {
   const ImageBody({super.key});
@@ -31,7 +32,7 @@ class _ImageBodyState extends State<ImageBody> {
                   children: [
                     Flexible(
                       child: Text(
-                        '우리집 강아지 자랑좀 할게여라라라라라라ㅏ라랄라ㅏㄹㄹㄹ',
+                        '우리집 강쥐 기욥져? 정말정말ㄹ요 너무너무귀여워서 깨물어',
                         style: TextStyle(
                           fontSize: 18, // 텍스트 크기 설정
                         ),
@@ -199,7 +200,15 @@ class _ImageBodyState extends State<ImageBody> {
               Container(
                 padding: const EdgeInsets.only(left: 15, right: 15, bottom: 20),
                 child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: false, // 서랍이 화면의 대부분을 차지하게 함
+                        builder: (BuildContext context) {
+                          return CommentDrawer(); // CommentDrawer 위젯을 사용하여 서랍 표시
+                        },
+                      );
+                    },
                     child: Row(
                       children: [
                         Icon(
