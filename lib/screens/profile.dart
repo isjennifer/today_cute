@@ -94,6 +94,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: SingleChildScrollView(
         controller: _scrollController,
@@ -195,32 +197,66 @@ class _ProfilePageState extends State<ProfilePage> {
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 40),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedTab = 0;
-                              });
-                            },
-                            child: Icon(
-                              Icons.collections,
-                              color: _selectedTab == 0
-                                  ? Colors.black
-                                  : Colors.grey,
-                            )),
-                        GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedTab = 1;
-                              });
-                            },
-                            child: Icon(
-                              Icons.favorite,
-                              color: _selectedTab == 1
-                                  ? Colors.black
-                                  : Colors.grey,
-                            )),
+                        Container(
+                          width: screenWidth / 2 - 1,
+                          child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _selectedTab = 0;
+                                });
+                              },
+                              child: _selectedTab == 0
+                                  ? Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.collections),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text(
+                                          '내 게시물',
+                                          style: TextStyle(fontSize: 18),
+                                        )
+                                      ],
+                                    )
+                                  : Icon(
+                                      Icons.collections,
+                                      color: Colors.grey,
+                                    )),
+                        ),
+                        Container(
+                          height: 30.0,
+                          width: 1.0,
+                          color: Colors.grey, // 가로선 색상
+                        ),
+                        Container(
+                          width: screenWidth / 2,
+                          child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _selectedTab = 1;
+                                });
+                              },
+                              child: _selectedTab == 1
+                                  ? Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.favorite),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text('좋아한 게시물',
+                                            style: TextStyle(fontSize: 18))
+                                      ],
+                                    )
+                                  : Icon(
+                                      Icons.favorite,
+                                      color: Colors.grey,
+                                    )),
+                        ),
                       ],
                     ),
                   ),

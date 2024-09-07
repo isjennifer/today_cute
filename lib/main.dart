@@ -8,9 +8,11 @@ import 'package:today_cute/screens/upload.dart';
 import 'screens/home.dart';
 import 'screens/search.dart';
 import 'screens/profile.dart';
+import 'screens/login.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'dart:async';
 import 'firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +61,8 @@ Future<void> _sendTokenToServer(String token) async {
   print("토큰을 서버에 전송 중: $token");
 }
 
+// MyApp 시작 부분
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -90,9 +94,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(Duration(seconds: 1), () {
-      // 3초 후에 PageFrame으로 이동
+      // 3초 후에 AuthCheck으로 이동
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => PageFrame()),
+        MaterialPageRoute(builder: (context) => AuthCheck()),
       );
     });
   }
@@ -106,6 +110,36 @@ class _SplashScreenState extends State<SplashScreen> {
           width: 220,
         ), // 로고 이미지 경로를 설정
       ),
+    );
+  }
+}
+
+class AuthCheck extends StatefulWidget {
+  @override
+  _AuthCheckState createState() => _AuthCheckState();
+}
+
+class _AuthCheckState extends State<AuthCheck> {
+  Future<bool> checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('authToken');
+    // 토큰이 있으면 로그인 상태, 없으면 비로그인 상태
+    return token != null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: checkLoginStatus(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasData && snapshot.data == true) {
+          return PageFrame(); // 로그인 상태
+        } else {
+          return LoginPage(); // 비로그인 상태
+        }
+      },
     );
   }
 }
@@ -224,11 +258,11 @@ class _HomePageState extends State<PageFrame> {
                 value: 1,
                 child: Container(
                   width: 200,
-                  height: 250,
-                  padding: EdgeInsets.symmetric(vertical: 30),
+                  height: 200,
+                  padding: EdgeInsets.symmetric(vertical: 20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black26,
@@ -238,9 +272,8 @@ class _HomePageState extends State<PageFrame> {
                     ],
                   ),
                   child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('내 깃털 개수 :'),
                         TextButton(
                           onPressed: () {
                             _howToUseFeatherModal(context);
@@ -260,10 +293,6 @@ class _HomePageState extends State<PageFrame> {
                                 style: TextStyle(fontSize: 20),
                               ),
                               SizedBox(width: 10),
-                              Icon(
-                                Icons.help_outline,
-                                size: 20,
-                              )
                             ],
                           ),
                         ),
