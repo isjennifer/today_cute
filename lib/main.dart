@@ -122,7 +122,7 @@ class AuthCheck extends StatefulWidget {
 class _AuthCheckState extends State<AuthCheck> {
   Future<bool> checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('authToken');
+    String? token = prefs.getString('accessToken');
     // 토큰이 있으면 로그인 상태, 없으면 비로그인 상태
     return token != null;
   }

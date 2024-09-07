@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:today_cute/widgets/comment_drawer.dart';
 import '../main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -54,13 +56,43 @@ class LoginPage extends StatelessWidget {
   Future<void> _saveTokenAndNavigate(
       BuildContext context, String accessToken) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('authToken', accessToken);
+    try {
+      // 서버에 토큰 전송 후 엑세스 토큰 받아 저장
+      final response = await http.post(
+        // Uri.parse('http://10.0.2.2:8000/api/auth/login/kakao'),
+        Uri.parse('http://52.231.106.232:8000/api/auth/login/kakao'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'access_token': accessToken,
+        }),
+      );
 
-    // 로그인 성공 후 메인 페이지로 이동
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => PageFrame()),
-    );
+      // 테스트 코드 서버 헬스체크 응답받을 수 있음
+      // final response = await http.get(
+      //     // Uri.parse('http://10.0.2.2:8000/'),
+      //     Uri.parse('http://52.231.106.232:8000/'));
+
+      // 서버 응답이 성공시
+      if (response.statusCode == 200) {
+        var responseBody = jsonDecode(response.body);
+        print('Response data: ${responseBody['access_token']}');
+
+        await prefs.setString('accessToken', accessToken);
+
+        // 로그인 성공 후 메인 페이지로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PageFrame()),
+        );
+      } else {
+        print('Failed to authenticate: ${response.statusCode}');
+        throw Exception('서버에서 로그인 실패. Status code: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('서버로그인 요청 실패 $error');
+    }
   }
 
   @override
