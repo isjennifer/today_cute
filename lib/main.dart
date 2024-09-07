@@ -17,7 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   KakaoSdk.init(
-    nativeAppKey: 'c1798f129d4667f86161e6c3916a5d3b',
+    nativeAppKey: 'fa34c75614ac318d63f7b6cd77ec9dfb',
   );
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
