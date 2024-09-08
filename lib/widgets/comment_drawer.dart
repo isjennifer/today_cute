@@ -121,7 +121,7 @@ class Comment extends StatefulWidget {
 }
 
 class _CommentState extends State<Comment> {
-  bool isExpanded = false;
+  bool isExpanded = true;
 
   @override
   Widget build(BuildContext context) {

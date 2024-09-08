@@ -18,23 +18,41 @@ class _UploadPageState extends State<UploadPage> {
   File? _video;
   final picker = ImagePicker();
 
-  Future getImages() async {
-    final pickedFiles = await picker.pickMultiImage();
+  Future getImages(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
-    if (pickedFiles != null && pickedFiles.isNotEmpty) {
-      setState(() {
-        _images = pickedFiles.map((file) => File(file.path)).toList();
-      });
+      if (pickedFile != null) {
+        setState(() {
+          _images = [File(pickedFile.path)];
+        });
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PostCreationPage(images: _images),
-        ),
-      );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostCreationPage(images: _images),
+          ),
+        );
+      }
     } else {
-      // 사진 선택이 취소되었을 경우 (pickedFiles가 null이거나 비어 있을 때)
-      // 네비게이션을 작동시키지 않음.
+      final pickedFiles = await picker.pickMultiImage();
+
+      if (pickedFiles.length <= 5 && pickedFiles.isNotEmpty) {
+        setState(() {
+          _images = pickedFiles.map((file) => File(file.path)).toList();
+        });
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostCreationPage(images: _images),
+          ),
+        );
+      } else if (pickedFiles.length > 5 && pickedFiles.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('이미지는 최대 5개까지 선택할 수 있습니다.')),
+        );
+      }
     }
   }
 
@@ -42,19 +60,37 @@ class _UploadPageState extends State<UploadPage> {
     final pickedFile = await picker.pickVideo(source: source);
 
     if (pickedFile != null) {
-      setState(() {
-        _video = File(pickedFile.path);
-      });
+      // 동영상 플레이어 컨트롤러로 길이를 확인합니다.
+      final videoPlayerController =
+          VideoPlayerController.file(File(pickedFile.path));
+      await videoPlayerController.initialize();
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PostCreationPage(
-            images: _images, // images 인자를 전달합니다.
-            video: _video, // 선택적으로 video 인자를 전달합니다.
+      final videoDuration = videoPlayerController.value.duration;
+
+      // 동영상 길이가 1분 이내인지 확인합니다.
+      if (videoDuration.inMinutes < 1) {
+        setState(() {
+          _video = File(pickedFile.path);
+        });
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostCreationPage(
+              images: _images, // images 인자를 전달합니다.
+              video: _video, // 선택적으로 video 인자를 전달합니다.
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        // 동영상이 1분 이상일 경우 경고 메시지를 띄웁니다.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('동영상 길이는 1분 이내여야 합니다.')),
+        );
+      }
+
+      // 리소스 해제
+      videoPlayerController.dispose();
     }
   }
 
@@ -81,7 +117,7 @@ class _UploadPageState extends State<UploadPage> {
                     ),
                   ),
                   child: Text('갤러리에서 이미지 선택'),
-                  onPressed: getImages,
+                  onPressed: () => getImages(ImageSource.gallery),
                 ),
               ),
             ),
@@ -121,15 +157,7 @@ class _UploadPageState extends State<UploadPage> {
                     ),
                   ),
                   child: Text('카메라로 사진 촬영'),
-                  onPressed: () async {
-                    final pickedFile =
-                        await picker.pickImage(source: ImageSource.camera);
-                    if (pickedFile != null) {
-                      setState(() {
-                        _images.add(File(pickedFile.path));
-                      });
-                    }
-                  },
+                  onPressed: () => getImages(ImageSource.camera),
                 ),
               ),
             ),
@@ -201,16 +229,16 @@ class _PostCreationPageState extends State<PostCreationPage> {
     super.dispose();
   }
 
-  Future<void> addMoreImages() async {
-    final picker = ImagePicker();
-    final pickedFiles = await picker.pickMultiImage();
+  // Future<void> addMoreImages() async {
+  //   final picker = ImagePicker();
+  //   final pickedFiles = await picker.pickMultiImage();
 
-    if (pickedFiles != null) {
-      setState(() {
-        _images.addAll(pickedFiles.map((file) => File(file.path)).toList());
-      });
-    }
-  }
+  //   if (pickedFiles != null) {
+  //     setState(() {
+  //       _images.addAll(pickedFiles.map((file) => File(file.path)).toList());
+  //     });
+  //   }
+  // }
 
   void removeImage(int index) {
     setState(() {
@@ -228,6 +256,24 @@ class _PostCreationPageState extends State<PostCreationPage> {
     });
   }
 
+  void _onTagChanged(String value) {
+    // 태그를 공백이나 쉼표로 분리
+    List<String> tags =
+        value.split(RegExp(r'[,\s]+')).where((tag) => tag.isNotEmpty).toList();
+
+    // 태그 개수를 10개로 제한
+    if (tags.length > 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('태그는 최대 10개까지 입력할 수 있습니다.')),
+      );
+      // 10개 이상의 태그가 입력되면, 제한된 10개 태그로 입력값을 조정
+      _tagsController.text = tags.sublist(0, 10).join(', ');
+      _tagsController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _tagsController.text.length),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -242,6 +288,7 @@ class _PostCreationPageState extends State<PostCreationPage> {
             children: <Widget>[
               TextField(
                 controller: _titleController,
+                maxLength: 20,
                 decoration: InputDecoration(
                   labelText: '제목',
                   border: OutlineInputBorder(),
@@ -260,9 +307,10 @@ class _PostCreationPageState extends State<PostCreationPage> {
               TextField(
                 controller: _tagsController,
                 decoration: InputDecoration(
-                  labelText: '태그 (#으로 구분하여 작성)',
+                  labelText: '태그 (쉼표(,)로 구분하여 작성)',
                   border: OutlineInputBorder(),
                 ),
+                onChanged: _onTagChanged,
               ),
               SizedBox(height: 10),
               if (_video == null) // 동영상이 없는 경우에만 이미지 그리드 및 추가 버튼 표시
@@ -307,23 +355,23 @@ class _PostCreationPageState extends State<PostCreationPage> {
                       },
                     ),
                     SizedBox(height: 10),
-                    TextButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size(200, 50),
-                        backgroundColor: Colors.white,
-                        foregroundColor: Color.fromARGB(255, 21, 120, 120),
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                      onPressed: addMoreImages,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [Icon(Icons.add, size: 18), Text('이미지 추가')],
-                      ),
-                    ),
+                    // TextButton(
+                    //   style: ElevatedButton.styleFrom(
+                    //     minimumSize: Size(200, 50),
+                    //     backgroundColor: Colors.white,
+                    //     foregroundColor: Color.fromARGB(255, 21, 120, 120),
+                    //     padding:
+                    //         EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(50),
+                    //     ),
+                    //   ),
+                    //   onPressed: addMoreImages,
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [Icon(Icons.add, size: 18), Text('이미지 추가')],
+                    //   ),
+                    // ),
                   ],
                 ),
               if (_video != null) // 동영상이 있는 경우 동영상 미리보기 및 클릭 시 재생/일시정지
