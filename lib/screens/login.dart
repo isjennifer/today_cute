@@ -48,6 +48,7 @@ class LoginPage extends StatelessWidget {
         await _saveTokenAndNavigate(context, token.accessToken);
       } catch (error) {
         print('카카오계정으로 로그인 실패 $error');
+        print(await KakaoSdk.origin);
       }
     }
   }
@@ -97,116 +98,94 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double maxWidth = MediaQuery.of(context).size.width;
+    final double maxHeight = MediaQuery.of(context).size.height;
+
     return Container(
       color: Colors.white,
       child: Stack(
         children: [
-          Transform.translate(
-            offset: Offset(0, -80),
-            child: OverflowBox(
-              alignment: Alignment.topCenter,
-              maxWidth: double.infinity,
-              child: Image.asset(
-                'assets/character_color_big.png',
-                width: 650,
-                fit: BoxFit.cover,
-              ),
+          OverflowBox(
+            alignment: Alignment(0, -1.2),
+            maxWidth: double.maxFinite,
+            child: Image.asset(
+              'assets/character_color_big.png',
+              width: maxWidth + 200,
+              fit: BoxFit.cover,
             ),
           ),
-          Transform.translate(
-            offset: Offset(0, 20),
-            child: OverflowBox(
-              alignment: Alignment.topCenter,
-              maxWidth: double.infinity,
-              child: Image.asset(
-                'assets/character_color_big.png',
-                width: 650,
-                fit: BoxFit.cover,
-              ),
+          OverflowBox(
+            alignment: Alignment(0, -1.0),
+            maxWidth: double.maxFinite,
+            child: Image.asset(
+              'assets/character_color_big.png',
+              width: maxWidth + 200,
+              fit: BoxFit.cover,
             ),
           ),
-          Transform.translate(
-            offset: Offset(0, 120),
-            child: OverflowBox(
-              alignment: Alignment.topCenter,
-              maxWidth: double.infinity,
-              child: Image.asset(
-                'assets/character_color_big.png',
-                width: 650,
-                fit: BoxFit.cover,
-              ),
+          OverflowBox(
+            alignment: Alignment(0, -0.8),
+            maxWidth: double.maxFinite,
+            child: Image.asset(
+              'assets/character_color_big.png',
+              width: maxWidth + 200,
+              fit: BoxFit.cover,
             ),
           ),
-          Transform.translate(
-            offset: Offset(0, -60),
-            child: Align(
-              alignment: Alignment.center, // 가로 중앙 정렬
-              child: Image.asset(
-                'assets/logo_color.png',
-                width: 250,
-              ),
+          Align(
+            alignment: Alignment(0, -0.12), // 가로 중앙 정렬
+            child: Image.asset(
+              'assets/logo_color.png',
+              width: 250,
             ),
           ),
-          Transform.translate(
-            offset: Offset(0, 30),
-            child: Align(
-              child: Material(
-                child: InkWell(
-                  onTap: () {
-                    // 버튼이 눌렸을 때 수행할 작업
-                    _loginWithKakao(context);
-                  },
-                  child: Image.asset(
-                    'assets/kakao_login_large_wide.png', // 이미지 경로
-                    width: 360, // 이미지 너비
-                  ),
+          Align(
+            alignment: Alignment(0, 0.09),
+            child: Material(
+              child: InkWell(
+                onTap: () {
+                  // 버튼이 눌렸을 때 수행할 작업
+                  _loginWithKakao(context);
+                },
+                child: Image.asset(
+                  'assets/kakao_login_large_wide.png', // 이미지 경로
+                  width: 360, // 이미지 너비
                 ),
               ),
             ),
           ),
-          Transform.translate(
-            offset: Offset(0, 80),
-            child: Center(
-                child: Text(
-              'Copyright 2024. 리브앤퀘스트 Co. All rights reserved.',
-              style:
-                  GoogleFonts.ibmPlexSansKr(fontSize: 10, color: Colors.grey),
-            )),
-          ),
-          Transform.translate(
-            offset: Offset(0, 570),
-            child: OverflowBox(
-              alignment: Alignment.topCenter,
-              maxWidth: double.infinity,
-              child: Image.asset(
-                'assets/character_color_big.png',
-                width: 650,
-                fit: BoxFit.cover,
-              ),
+          Align(
+              alignment: Alignment(0, 0.2),
+              child: Text(
+                'Copyright 2024. 리브앤퀘스트 Co. All rights reserved.',
+                style:
+                    GoogleFonts.ibmPlexSansKr(fontSize: 10, color: Colors.grey),
+              )),
+          OverflowBox(
+            alignment: Alignment(0, 0.8),
+            maxWidth: double.maxFinite,
+            child: Image.asset(
+              'assets/character_color_big.png',
+              width: maxWidth + 200,
+              fit: BoxFit.cover,
             ),
           ),
-          Transform.translate(
-            offset: Offset(0, 670),
-            child: OverflowBox(
-              alignment: Alignment.topCenter,
-              maxWidth: double.infinity,
-              child: Image.asset(
-                'assets/character_color_big.png',
-                width: 650,
-                fit: BoxFit.cover,
-              ),
+          OverflowBox(
+            alignment: Alignment(0, 1),
+            maxWidth: double.maxFinite,
+            child: Image.asset(
+              'assets/character_color_big.png',
+              width: maxWidth + 200,
+              fit: BoxFit.cover,
             ),
           ),
-          Transform.translate(
-            offset: Offset(0, 770),
-            child: OverflowBox(
-              alignment: Alignment.topCenter,
-              maxWidth: double.infinity,
-              child: Image.asset(
-                'assets/character_color_big.png',
-                width: 650,
-                fit: BoxFit.cover,
-              ),
+          OverflowBox(
+            alignment: Alignment(0, 1.2),
+            maxWidth: double.maxFinite,
+            child: Image.asset(
+              'assets/character_color_big.png',
+              width: maxWidth + 200,
+              fit: BoxFit.cover,
             ),
           ),
         ],

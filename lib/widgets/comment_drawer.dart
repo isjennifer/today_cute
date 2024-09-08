@@ -125,9 +125,11 @@ class _CommentState extends State<Comment> {
 
   @override
   Widget build(BuildContext context) {
+    double maxWidth = MediaQuery.of(context).size.width;
     return Container(
       margin: EdgeInsets.only(top: 10, bottom: 20),
       child: Row(
+        mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -142,7 +144,7 @@ class _CommentState extends State<Comment> {
           ),
           SizedBox(width: 15),
           Container(
-            width: 310,
+            width: maxWidth * 0.7,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

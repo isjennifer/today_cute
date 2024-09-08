@@ -16,6 +16,7 @@ class _ImageBodyState extends State<ImageBody> {
 
   @override
   Widget build(BuildContext context) {
+    double maxWidth = MediaQuery.of(context).size.width;
     return Container(
         width: double.infinity,
         color: Colors.white,
@@ -47,7 +48,7 @@ class _ImageBodyState extends State<ImageBody> {
                 margin: const EdgeInsets.symmetric(vertical: 10.0),
                 decoration: BoxDecoration(color: Colors.black),
                 width: double.infinity,
-                height: 600,
+                height: maxWidth,
                 child: ClipRect(
                   child: PageView(
                     controller: _pageController,
@@ -109,92 +110,76 @@ class _ImageBodyState extends State<ImageBody> {
               Container(
                 padding: const EdgeInsets.only(
                     left: 25, top: 5, right: 25, bottom: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          '2024년 10월 20일',
-                          style: TextStyle(color: Colors.grey),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal, // 가로로 스크롤 가능하게 설정
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4), // 텍스트 주변의 패딩을 추가하여 공간 확보
+                        decoration: BoxDecoration(
+                          color: Color(0XFFFFF99CC), // 배경색 설정
+                          borderRadius:
+                              BorderRadius.circular(14), // 모서리를 둥글게 설정
                         ),
-                      ],
-                    ),
-                    Container(
-                      width: 250,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal, // 가로로 스크롤 가능하게 설정
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 4), // 텍스트 주변의 패딩을 추가하여 공간 확보
-                              decoration: BoxDecoration(
-                                color: Color(0XFFFFF99CC), // 배경색 설정
-                                borderRadius:
-                                    BorderRadius.circular(14), // 모서리를 둥글게 설정
-                              ),
-                              child: Text(
-                                '#고양이',
-                                style: TextStyle(
-                                  color: Colors.black, // 텍스트 색상을 흰색으로 설정
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 4), // 텍스트 주변의 패딩을 추가하여 공간 확보
-                              decoration: BoxDecoration(
-                                color: Color(0XFFFFFFF66), // 배경색 설정
-                                borderRadius:
-                                    BorderRadius.circular(14), // 모서리를 둥글게 설정
-                              ),
-                              child: Text(
-                                '#귀욤짤',
-                                style: TextStyle(
-                                  color: Colors.black, // 텍스트 색상을 흰색으로 설정
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 4), // 텍스트 주변의 패딩을 추가하여 공간 확보
-                              decoration: BoxDecoration(
-                                color: Color(0XFFFCCFFFF), // 배경색 설정
-                                borderRadius:
-                                    BorderRadius.circular(14), // 모서리를 둥글게 설정
-                              ),
-                              child: Text(
-                                '#강아지',
-                                style: TextStyle(
-                                  color: Colors.black, // 텍스트 색상을 흰색으로 설정
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 4), // 텍스트 주변의 패딩을 추가하여 공간 확보
-                              decoration: BoxDecoration(
-                                color: Color(0XFFFCCFFFF), // 배경색 설정
-                                borderRadius:
-                                    BorderRadius.circular(14), // 모서리를 둥글게 설정
-                              ),
-                              child: Text(
-                                '#강아지',
-                                style: TextStyle(
-                                  color: Colors.black, // 텍스트 색상을 흰색으로 설정
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          '#고양이',
+                          style: TextStyle(
+                            color: Colors.black, // 텍스트 색상을 흰색으로 설정
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4), // 텍스트 주변의 패딩을 추가하여 공간 확보
+                        decoration: BoxDecoration(
+                          color: Color(0XFFFFFFF66), // 배경색 설정
+                          borderRadius:
+                              BorderRadius.circular(14), // 모서리를 둥글게 설정
+                        ),
+                        child: Text(
+                          '#귀욤짤',
+                          style: TextStyle(
+                            color: Colors.black, // 텍스트 색상을 흰색으로 설정
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4), // 텍스트 주변의 패딩을 추가하여 공간 확보
+                        decoration: BoxDecoration(
+                          color: Color(0XFFFCCFFFF), // 배경색 설정
+                          borderRadius:
+                              BorderRadius.circular(14), // 모서리를 둥글게 설정
+                        ),
+                        child: Text(
+                          '#강아지지지지지',
+                          style: TextStyle(
+                            color: Colors.black, // 텍스트 색상을 흰색으로 설정
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4), // 텍스트 주변의 패딩을 추가하여 공간 확보
+                        decoration: BoxDecoration(
+                          color: Color(0XFFFCCFFFF), // 배경색 설정
+                          borderRadius:
+                              BorderRadius.circular(14), // 모서리를 둥글게 설정
+                        ),
+                        child: Text(
+                          '#강아지지지지지지지',
+                          style: TextStyle(
+                            color: Colors.black, // 텍스트 색상을 흰색으로 설정
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Container(

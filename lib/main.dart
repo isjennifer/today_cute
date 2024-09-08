@@ -193,16 +193,16 @@ class _HomePageState extends State<PageFrame> {
       context: context,
       barrierDismissible: true, // 모달 밖을 클릭하면 닫힘
       builder: (BuildContext context) {
+        final screenheight = MediaQuery.of(context).size.height;
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Container(
-            width: 400,
-            height: 300,
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
