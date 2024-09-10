@@ -10,85 +10,55 @@ import '../main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'register.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
-  Future<void> _loginWithKakao(BuildContext context) async {
-    // 카카오 로그인 구현 예제
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
 
-    // 카카오톡 실행 가능 여부 확인
-    // 카카오톡 실행이 가능하면 카카오톡으로 로그인, 아니면 카카오계정으로 로그인
-    if (await isKakaoTalkInstalled()) {
-      try {
-        OAuthToken token = await UserApi.instance.loginWithKakaoTalk();
-        print('카카오톡으로 로그인 성공 ${token.accessToken}');
-        await _saveTokenAndNavigate(context, token.accessToken);
-      } catch (error) {
-        print('카카오톡으로 로그인 실패 $error');
+class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController _nicknameController = TextEditingController();
 
-        // 사용자가 카카오톡 설치 후 디바이스 권한 요청 화면에서 로그인을 취소한 경우,
-        // 의도적인 로그인 취소로 보고 카카오계정으로 로그인 시도 없이 로그인 취소로 처리 (예: 뒤로 가기)
-        if (error is PlatformException && error.code == 'CANCELED') {
-          return;
-        }
-        // 카카오톡에 연결된 카카오계정이 없는 경우, 카카오계정으로 로그인
-        try {
-          OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
-          print('카카오계정으로 로그인 성공 ${token.accessToken}');
-          await _saveTokenAndNavigate(context, token.accessToken);
-        } catch (error) {
-          print('카카오계정으로 로그인 실패 $error');
-        }
-      }
-    } else {
-      try {
-        OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
-        print('카카오계정으로 로그인 성공 ${token.accessToken}');
-        await _saveTokenAndNavigate(context, token.accessToken);
-      } catch (error) {
-        print('카카오계정으로 로그인 실패 $error');
-        print(await KakaoSdk.origin);
-      }
-    }
+  @override
+  void dispose() {
+    // 반드시 dispose에서 controller를 해제해야 함
+    _nicknameController.dispose();
+    super.dispose();
   }
 
-  // 토큰 저장 후 메인 페이지로 이동
-  Future<void> _saveTokenAndNavigate(
-      BuildContext context, String kakaoToken) async {
+  Future<void> _register(BuildContext context, String kakaoToken) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String nickname = _nicknameController.text;
+
     try {
-      // 서버에 카카오 토큰 전송
+      // 서버에 토큰 전송
       final response = await http.post(
-        // Uri.parse('http://10.0.2.2:8000/api/auth/login/kakao'),
-        Uri.parse('http://52.231.106.232:8000/api/auth/login/kakao'),
+        // Uri.parse('http://10.0.2.2:8000/api/auth/register'),
+        Uri.parse('http://52.231.106.232:8000/api/auth/register'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
           'access_token': kakaoToken,
+          'nick_name': nickname,
         }),
       );
 
-      // 서버 응답이 성공
+      // 서버 응답이 성공시
       if (response.statusCode == 200) {
         var responseBody = jsonDecode(response.body);
-        print('accessToken: ${responseBody['access_token']}');
+        print('access_token: ${responseBody['access_token']}');
 
         // 서버에서 받은 액세스토큰을 저장
         await prefs.setString('accessToken', responseBody['access_token']);
 
-        // 로그인 성공 후 메인 페이지로 이동
+        // main.dart의 Authcheck로 이동
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PageFrame()),
-        );
-      } else if (response.statusCode == 404) {
-        // 비회원의 경우 회원가입 페이지로 이동
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => RegisterPage()),
+          MaterialPageRoute(builder: (context) => AuthCheck()),
         );
       } else {
         // 서버 응답이 실패 시 응답 본문을 출력
@@ -139,33 +109,51 @@ class LoginPage extends StatelessWidget {
             ),
           ),
           Align(
-            alignment: Alignment(0, -0.12), // 가로 중앙 정렬
+            alignment: Alignment(0, -0.2), // 가로 중앙 정렬
             child: Image.asset(
               'assets/logo_color.png',
               width: 250,
             ),
           ),
           Align(
-            alignment: Alignment(0, 0.09),
-            child: Material(
-              child: InkWell(
-                onTap: () {
-                  // 버튼이 눌렸을 때 수행할 작업
-                  _loginWithKakao(context);
-                },
-                child: Image.asset(
-                  'assets/kakao_login_large_wide.png', // 이미지 경로
-                  width: 360, // 이미지 너비
-                ),
-              ),
-            ),
-          ),
-          Align(
-              alignment: Alignment(0, 0.2),
+              alignment: Alignment(0, -0.02),
               child: Text(
-                'Copyright 2024. 리브앤퀘스트 Co. All rights reserved.',
-                style:
-                    GoogleFonts.ibmPlexSansKr(fontSize: 10, color: Colors.grey),
+                '사용하실 닉네임을 정해주세요!',
+                style: GoogleFonts.ibmPlexSansKr(
+                    fontSize: 18, color: Colors.black),
+              )),
+          Align(
+              alignment: Alignment(0, 0.15),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 50.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                        child: Material(
+                      child: TextField(
+                        controller: TextEditingController(),
+                        decoration: InputDecoration(
+                          hintText: "닉네임은 8자 이내여야 합니다.",
+                          border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30))),
+                        ),
+                        maxLength: 8,
+                      ),
+                    )),
+                    SizedBox(width: 8.0),
+                    ElevatedButton(
+                      onPressed: () {
+                        _register(context, 'access_token');
+                      },
+                      child: Icon(Icons.arrow_forward),
+                      style: ElevatedButton.styleFrom(
+                        shape: CircleBorder(), // 버튼을 원형으로 만듦
+                        padding: EdgeInsets.all(12.0), // 버튼 크기 조정
+                      ),
+                    ),
+                  ],
+                ),
               )),
           OverflowBox(
             alignment: Alignment(0, 0.8),

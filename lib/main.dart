@@ -9,6 +9,7 @@ import 'screens/home.dart';
 import 'screens/search.dart';
 import 'screens/profile.dart';
 import 'screens/login.dart';
+import 'screens/register.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'dart:async';
 import 'firebase_options.dart';
@@ -159,6 +160,7 @@ class _HomePageState extends State<PageFrame> {
     UploadPage(),
     AlarmPage(),
     ProfilePage(),
+    // RegisterPage()
   ];
 
   void _onItemTapped(int index) {
