@@ -55,7 +55,7 @@ class LoginPage extends StatelessWidget {
 
   // 토큰 저장 후 메인 페이지로 이동
   Future<void> _saveTokenAndNavigate(
-      BuildContext context, String accessToken) async {
+      BuildContext context, String kakaoToken) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
       // 서버에 토큰 전송 후 엑세스 토큰 받아 저장
@@ -66,21 +66,65 @@ class LoginPage extends StatelessWidget {
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          'access_token': accessToken,
+          'access_token': kakaoToken,
         }),
       );
-
-      // 테스트 코드 서버 헬스체크 응답받을 수 있음
-      // final response = await http.get(
-      //     // Uri.parse('http://10.0.2.2:8000/'),
-      //     Uri.parse('http://52.231.106.232:8000/'));
 
       // 서버 응답이 성공시
       if (response.statusCode == 200) {
         var responseBody = jsonDecode(response.body);
-        print('Response data: ${responseBody['access_token']}');
+        print('accessToken: ${responseBody['access_token']}');
 
-        await prefs.setString('accessToken', accessToken);
+        await prefs.setString('accessToken', responseBody['access_token']);
+
+        // 로그인 성공 후 메인 페이지로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PageFrame()),
+        );
+      } else if (response.statusCode == 404) {
+        // 비회원의 경우
+        _register(context, kakaoToken);
+      } else {
+        // 서버 응답이 실패 시 응답 본문을 출력
+        var responseBody = jsonDecode(response.body);
+        print('Failed to authenticate: ${responseBody['detail']}');
+        throw Exception(
+            '서버에서 로그인 실패. Status code: ${response.statusCode}, Message: ${responseBody['detail']}');
+      }
+    } catch (error) {
+      print('서버로그인 요청 실패 $error');
+    }
+  }
+
+  // 로그인 시도시 404응답을 받을 경우 회원가입
+  Future<void> _register(BuildContext context, String kakaoToken) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // 사용자에게서 받은 닉네임
+    // TODO: 이곳에 닉네임을 받을 수 있도록 회원가입 페이지 등을 통해 받아와 주세요
+    String nikname = "";
+
+    try {
+      // 서버에 토큰 전송 후 엑세스 토큰 받아 저장
+      final response = await http.post(
+        // Uri.parse('http://10.0.2.2:8000/api/auth/register'),
+        Uri.parse('http://52.231.106.232:8000/api/auth/register'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'access_token': kakaoToken,
+          'nick_name': nikname,
+        }),
+      );
+
+      // 서버 응답이 성공시
+      if (response.statusCode == 200) {
+        var responseBody = jsonDecode(response.body);
+        print('access_token: ${responseBody['access_token']}');
+
+        await prefs.setString('accessToken', responseBody['access_token']);
 
         // 로그인 성공 후 메인 페이지로 이동
         Navigator.pushReplacement(
@@ -88,8 +132,11 @@ class LoginPage extends StatelessWidget {
           MaterialPageRoute(builder: (context) => PageFrame()),
         );
       } else {
-        print('Failed to authenticate: ${response.statusCode}');
-        throw Exception('서버에서 로그인 실패. Status code: ${response.statusCode}');
+        // 서버 응답이 실패 시 응답 본문을 출력
+        var responseBody = jsonDecode(response.body);
+        print('Failed to authenticate: ${responseBody['detail']}');
+        throw Exception(
+            '서버에서 로그인 실패. Status code: ${response.statusCode}, Message: ${responseBody['detail']}');
       }
     } catch (error) {
       print('서버로그인 요청 실패 $error');
