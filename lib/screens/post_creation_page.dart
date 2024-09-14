@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,8 +7,10 @@ import 'package:video_player/video_player.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mime/mime.dart'; // for detecting file type
 
 class PostCreationPage extends StatefulWidget {
   final List<File> images;
@@ -104,24 +105,34 @@ class _PostCreationPageState extends State<PostCreationPage> {
 
     // 이미지 파일 추가
     for (var image in _images) {
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'files', // 서버에서 기대하는 필드명
-          image.path,
-          filename: basename(image.path),
-        ),
-      );
+      final mimeTypeData = lookupMimeType(image.path);
+      if (mimeTypeData != null) {
+        final mimeType = mimeTypeData.split('/');
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'files', // 서버에서 기대하는 필드명
+            image.path,
+            filename: basename(image.path),
+            contentType: MediaType(mimeType[0], mimeType[1]), // MIME 타입 설정
+          ),
+        );
+      }
     }
 
     // 동영상 파일 추가 (선택적)
     if (_video != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'files', // 서버에서 기대하는 필드명
-          _video!.path,
-          filename: basename(_video!.path),
-        ),
-      );
+      final mimeTypeData = lookupMimeType(_video!.path);
+      if (mimeTypeData != null) {
+        final mimeType = mimeTypeData.split('/');
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'files', // 서버에서 기대하는 필드명
+            _video!.path,
+            filename: basename(_video!.path),
+            contentType: MediaType(mimeType[0], mimeType[1]), // MIME 타입 설정
+          ),
+        );
+      }
     }
 
     // 요청 전송

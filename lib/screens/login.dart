@@ -88,7 +88,8 @@ class LoginPage extends StatelessWidget {
         // 비회원의 경우 회원가입 페이지로 이동
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => RegisterPage()),
+          MaterialPageRoute(
+              builder: (context) => RegisterPage(kakaoToken: kakaoToken)),
         );
       } else {
         // 서버 응답이 실패 시 응답 본문을 출력

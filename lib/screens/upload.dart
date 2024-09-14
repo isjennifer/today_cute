@@ -79,8 +79,8 @@ class _UploadPageState extends State<UploadPage> {
           context,
           MaterialPageRoute(
             builder: (context) => PostCreationPage(
-              images: _images, // images 인자를 전달합니다.
-              video: _video, // 선택적으로 video 인자를 전달합니다.
+              images: [], // images 인자로는 빈값 전달.
+              video: _video, // video 인자를 전달합니다.
             ),
           ),
         );

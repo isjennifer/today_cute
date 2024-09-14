@@ -36,14 +36,14 @@ class Post {
   }
 }
 
-class ImageBody extends StatefulWidget {
-  const ImageBody({super.key});
+class HomeFrame extends StatefulWidget {
+  const HomeFrame({super.key});
 
   @override
-  _ImageBodyState createState() => _ImageBodyState();
+  _HomeFrameState createState() => _HomeFrameState();
 }
 
-class _ImageBodyState extends State<ImageBody> {
+class _HomeFrameState extends State<HomeFrame> {
   final PageController _pageController = PageController();
   List<Post> posts = [];
 
@@ -51,11 +51,6 @@ class _ImageBodyState extends State<ImageBody> {
   void initState() {
     super.initState();
     fetchPostData();
-    // 페이지 이동 시마다 호출
-    _pageController.addListener(() {
-      // 현재 페이지를 출력
-      print('현재 SmoothPageIndicator가 참조하는 페이지: ${_pageController.page}');
-    });
   }
 
   Future<void> fetchPostData() async {
@@ -101,8 +96,6 @@ class _ImageBodyState extends State<ImageBody> {
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
-              // print('파일 url 0: ${post.fileUrls[0]}');
-              // print('파일 url 1: ${post.fileUrls[1]}');
 
               return Container(
                   width: double.infinity,
@@ -132,42 +125,12 @@ class _ImageBodyState extends State<ImageBody> {
                             ],
                           ),
                         ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 10.0),
-                          decoration: BoxDecoration(color: Colors.black),
-                          width: double.infinity,
-                          height: maxWidth,
-                          child: ClipRect(
-                            child: PageView(
-                              controller: _pageController,
-                              onPageChanged: (index) {
-                                print(
-                                    '현재 페이지 인덱스: $index'); // 페이지가 변경될 때마다 인덱스가 출력됨
-                                setState(() {}); // 상태 갱신
-                              },
-                              children: [
-                                Image.asset(
-                                  'assets/dog.jpg',
-                                  // fit: BoxFit.cover,
-                                ),
-                                Image.asset(
-                                  'assets/cat.png',
-                                  // fit: BoxFit.cover,
-                                ),
-                              ],
-                              // children: post.fileUrls.map((url) {
-                              //   return Image.network(
-                              //     'http://52.231.106.232:8000$url',
-                              //   );
-                              // }).toList(),
-                            ),
-                          ),
-                        ),
+                        //file 출력 공간
                         Container(
                           padding: const EdgeInsets.only(top: 10.0),
                           child: SmoothPageIndicator(
                             controller: _pageController,
-                            count: 2,
+                            count: post.fileUrls.length,
                             effect: ExpandingDotsEffect(
                               dotHeight: 5.0,
                               dotWidth: 5.0,
