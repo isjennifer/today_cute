@@ -60,14 +60,11 @@ class _RegisterPageState extends State<RegisterPage> {
         );
       } else {
         var responseBody = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("로그인 실패: ${responseBody['detail']}"),
-        ));
+
+        print("로그인 실패: ${responseBody['detail']}");
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("서버 요청 실패: $error"),
-      ));
+      print("서버 요청 실패: $error");
     }
   }
 

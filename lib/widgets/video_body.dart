@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import '../utils/expandable_text.dart';
 
 class VideoBody extends StatefulWidget {
@@ -12,30 +12,29 @@ class VideoBody extends StatefulWidget {
 
 class _VideoBodyState extends State<VideoBody> {
   late VideoPlayerController _videoController;
+  bool _isVideoVisible = false;
 
   @override
   void initState() {
     super.initState();
     _videoController = VideoPlayerController.asset('assets/sample_video.mp4')
       ..initialize().then((_) {
-        setState(() {}); // 비디오 초기화 후 화면을 다시 그립니다.
+        setState(() {});
         _videoController.setLooping(true);
-        _videoController.play(); // 비디오 자동 재생
       }).catchError((error) {
         print('Error initializing video player: $error');
       });
 
-    // 비디오 플레이어의 상태가 변할 때마다 호출되는 리스너 추가
     _videoController.addListener(() {
       if (_videoController.value.isInitialized) {
-        setState(() {}); // 남은 시간을 업데이트하기 위해 setState 호출
+        setState(() {});
       }
     });
   }
 
   @override
   void dispose() {
-    _videoController.dispose(); // 메모리 누수를 방지하기 위해 컨트롤러를 해제합니다.
+    _videoController.dispose();
     super.dispose();
   }
 
@@ -81,35 +80,47 @@ class _VideoBodyState extends State<VideoBody> {
                       child: Text(
                         '우리집 강아지 자랑좀 할게여라라라라라라ㅏ라랄라ㅏㄹㄹㄹ',
                         style: TextStyle(
-                          fontSize: 18, // 텍스트 크기 설정
+                          fontSize: 18,
                         ),
-                        overflow: TextOverflow.ellipsis, // 길어지면 ...으로 표시
-                        maxLines: 1, // 한 줄로 제한
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                   ],
                 ),
               ),
               GestureDetector(
-                onTap: _togglePlayPause, // 클릭 시 재생 또는 일시정지
+                onTap: _togglePlayPause,
                 child: Stack(
                   alignment: Alignment.bottomRight,
                   children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 10.0),
-                      decoration: BoxDecoration(color: Colors.black),
-                      width: double.infinity,
-                      height: 600,
-                      child: ClipRect(
-                        child: _videoController.value.isInitialized
-                            ? Center(
-                                child: AspectRatio(
-                                  aspectRatio:
-                                      _videoController.value.aspectRatio,
-                                  child: VideoPlayer(_videoController),
-                                ),
-                              )
-                            : Center(child: CircularProgressIndicator()),
+                    VisibilityDetector(
+                      key: Key('video-player'),
+                      onVisibilityChanged: (VisibilityInfo info) {
+                        if (info.visibleFraction > 0.5 &&
+                            !_videoController.value.isPlaying) {
+                          _videoController.play();
+                        } else if (info.visibleFraction <= 0.5 &&
+                            _videoController.value.isPlaying) {
+                          _videoController.pause();
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10.0),
+                        decoration: BoxDecoration(color: Colors.black),
+                        width: double.infinity,
+                        height: 600,
+                        child: ClipRect(
+                          child: _videoController.value.isInitialized
+                              ? Center(
+                                  child: AspectRatio(
+                                    aspectRatio:
+                                        _videoController.value.aspectRatio,
+                                    child: VideoPlayer(_videoController),
+                                  ),
+                                )
+                              : Center(child: CircularProgressIndicator()),
+                        ),
                       ),
                     ),
                     if (_videoController.value.isInitialized)
@@ -123,9 +134,9 @@ class _VideoBodyState extends State<VideoBody> {
                             fontSize: 16,
                             shadows: [
                               Shadow(
-                                offset: Offset(2.0, 2.0), // 그림자의 위치
-                                blurRadius: 1.0, // 그림자의 흐림 정도
-                                color: Colors.black.withOpacity(0.5), // 그림자의 색상
+                                offset: Offset(2.0, 2.0),
+                                blurRadius: 1.0,
+                                color: Colors.black.withOpacity(0.5),
                               ),
                             ],
                           ),

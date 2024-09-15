@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math';
 import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class Post {
   final String userId;
@@ -52,10 +53,10 @@ class _ImageBodyState extends State<ImageBody> {
     super.initState();
     fetchPostData();
     // 페이지 이동 시마다 호출
-    _pageController.addListener(() {
-      // 현재 페이지를 출력
-      print('현재 SmoothPageIndicator가 참조하는 페이지: ${_pageController.page}');
-    });
+    // _pageController.addListener(() {
+    //   // 현재 페이지를 출력
+    //   print('현재 SmoothPageIndicator가 참조하는 페이지: ${_pageController.page}');
+    // });
   }
 
   Future<void> fetchPostData() async {
@@ -132,50 +133,46 @@ class _ImageBodyState extends State<ImageBody> {
                             ],
                           ),
                         ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 10.0),
-                          decoration: BoxDecoration(color: Colors.black),
-                          width: double.infinity,
-                          height: maxWidth,
-                          child: ClipRect(
-                            child: PageView(
-                              controller: _pageController,
-                              onPageChanged: (index) {
-                                print(
-                                    '현재 페이지 인덱스: $index'); // 페이지가 변경될 때마다 인덱스가 출력됨
-                                setState(() {}); // 상태 갱신
-                              },
-                              children: [
-                                Image.asset(
-                                  'assets/dog.jpg',
-                                  // fit: BoxFit.cover,
-                                ),
-                                Image.asset(
-                                  'assets/cat.png',
-                                  // fit: BoxFit.cover,
-                                ),
-                              ],
-                              // children: post.fileUrls.map((url) {
-                              //   return Image.network(
-                              //     'http://52.231.106.232:8000$url',
-                              //   );
-                              // }).toList(),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.only(top: 10.0),
-                          child: SmoothPageIndicator(
-                            controller: _pageController,
-                            count: 2,
-                            effect: ExpandingDotsEffect(
-                              dotHeight: 5.0,
-                              dotWidth: 5.0,
-                              activeDotColor: Colors.black,
-                              dotColor: Colors.grey,
-                            ),
-                          ),
-                        ),
+                        (post.fileUrls[0].endsWith('jpg') ||
+                                post.fileUrls[0].endsWith('jpeg') ||
+                                post.fileUrls[0].endsWith('png') ||
+                                post.fileUrls[0].endsWith('gif'))
+                            ? Column(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        vertical: 10.0),
+                                    decoration:
+                                        BoxDecoration(color: Colors.black),
+                                    width: double.infinity,
+                                    height: maxWidth,
+                                    child: ClipRect(
+                                      child: PageView(
+                                        controller: _pageController,
+                                        children: post.fileUrls.map((url) {
+                                          return Image.network(
+                                            'http://52.231.106.232:8000$url',
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.only(top: 10.0),
+                                    child: SmoothPageIndicator(
+                                      controller: _pageController,
+                                      count: post.fileUrls.length,
+                                      effect: ScrollingDotsEffect(
+                                        dotHeight: 5.0,
+                                        dotWidth: 5.0,
+                                        activeDotColor: Colors.black,
+                                        dotColor: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text('dkssud'),
                         Container(
                           padding: const EdgeInsets.only(
                               left: 25, top: 15, right: 25, bottom: 5),
@@ -282,3 +279,65 @@ class _ImageBodyState extends State<ImageBody> {
             });
   }
 }
+
+// class VideoBody extends StatefulWidget {
+//   const VideoBody({super.key});
+
+//   @override
+//   _VideoBodyState createState() => _VideoBodyState();
+// }
+
+// class _VideoBodyState extends State<VideoBody> {
+//   late VideoPlayerController _videoController;
+//   bool _isVideoVisible = false;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _videoController = VideoPlayerController.asset('http://52.231.106.232:8000${post.fileUrls[0]}')
+//       ..initialize().then((_) {
+//         setState(() {});
+//         _videoController.setLooping(true);
+//       }).catchError((error) {
+//         print('Error initializing video player: $error');
+//       });
+
+//     _videoController.addListener(() {
+//       if (_videoController.value.isInitialized) {
+//         setState(() {});
+//       }
+//     });
+//   }
+
+//   @override
+//   void dispose() {
+//     _videoController.dispose();
+//     super.dispose();
+//   }
+
+//   void _togglePlayPause() {
+//     setState(() {
+//       if (_videoController.value.isPlaying) {
+//         _videoController.pause();
+//       } else {
+//         _videoController.play();
+//       }
+//     });
+//   }
+
+//   String _getRemainingTime() {
+//     final duration = _videoController.value.duration;
+//     final position = _videoController.value.position;
+//     final remaining = duration - position;
+//     final minutes =
+//         remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
+//     final seconds =
+//         remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
+//     return '$minutes:$seconds';
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return 
+//   }
+// }
