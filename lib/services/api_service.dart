@@ -22,6 +22,23 @@ Future<List<Post>> fetchPostData() async {
   }
 }
 
+Future<void> deletePostData(String postId) async {
+  try {
+    final response = await http.delete(
+      Uri.parse('http://52.231.106.232:8000/api/post/$postId'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    final Map<String, dynamic> decodedResponse =
+        jsonDecode(utf8.decode(response.bodyBytes));
+    print('deletePostData: $decodedResponse');
+  } catch (e) {
+    print('Error: $e');
+  }
+}
+
 // Fetch user data from API (if needed)
 Future<void> fetchId() async {
   try {

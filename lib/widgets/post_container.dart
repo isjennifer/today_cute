@@ -185,15 +185,20 @@ class PostContainer extends StatelessWidget {
                       ],
                     )),
               ),
-              post.userId == 2 // 여기서 내 id와 userId가 동일하면 보여주기
-                  ? Container(
+              post.userId == '66e6d22ce248f7e634aceb91'
+                  ? // 여기서 내 id와 userId가 동일하면 보여주기
+                  Container(
                       padding: const EdgeInsets.only(
                           left: 25, top: 0, right: 25, bottom: 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           TextButton(onPressed: () {}, child: Text('수정')),
-                          TextButton(onPressed: () {}, child: Text('삭제')),
+                          TextButton(
+                              onPressed: () {
+                                deletePostData(post.id);
+                              },
+                              child: Text('삭제')),
                         ],
                       ),
                     )
