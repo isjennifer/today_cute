@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'setting.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:math';
+import '../models/post.dart';
+import '../services/api_service.dart';
+import '../widgets/post_container.dart';
+import '../widgets/post_container.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -14,9 +21,10 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _selectedTab = 0;
+  List<Post> upload_posts = [];
 
-// 각 탭에 대응하는 이미지 목록
-  final List<List<String>> _images = [
+// 각 탭에 대응하는 포스팅 목록
+  final List<List<Post>> _posts = [
     [], // 업로드한 게시물 이미지 리스트
     [], // 좋아한 게시물 이미지 리스트
   ];
@@ -28,73 +36,59 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _initializeImages(); // 초기 이미지를 로드합니다.
+    fetchPosts();
 
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
-        if (_hasMoreData) {
-          _loadMoreItems();
-        }
-      }
-    });
+    // _scrollController.addListener(() {
+    //   if (_scrollController.position.pixels ==
+    //       _scrollController.position.maxScrollExtent) {
+    //     if (_hasMoreData) {
+    //       _loadMoreItems();
+    //     }
+    //   }
+    // });
   }
 
-// 초기 이미지를 로드하는 함수 (서버에서 10개 이미지를 가져오는 시뮬레이션)
-  void _initializeImages() {
+// 전체 포스팅 로드
+  Future<void> fetchPosts() async {
+    final postList =
+        await fetchPostData(); // api_service.dart의 fetchPostData 호출
     setState(() {
-      // 여기서 서버에서 이미지를 불러오는 API 호출을 시뮬레이션합니다.
-      List<String> initialImages = [
-        'assets/uploaded_1.png',
-        'assets/uploaded_2.png',
-        'assets/uploaded_3.png',
-        'assets/uploaded_4.png',
-        'assets/uploaded_5.png',
-        'assets/uploaded_6.png',
-        'assets/uploaded_7.png',
-        'assets/uploaded_8.png',
-        'assets/uploaded_9.png',
-        'assets/uploaded_10.png',
-      ];
-
-      _images[_selectedTab].addAll(initialImages);
-
-      if (_images[_selectedTab].length >= 10) {
-        _hasMoreData = false; // 불러올 데이터가 더 이상 없음
-      }
-
-      _loadedItemCount = _images[_selectedTab].length;
+      upload_posts = postList;
+      upload_posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      // _posts 리스트를 업데이트
+      _posts[0] = upload_posts; // 첫 번째 탭의 포스팅 목록 업데이트
     });
   }
 
 // 추가 이미지를 로드하는 함수
-  void _loadMoreItems() {
-    setState(() {
-      int startIndex = _loadedItemCount + 1;
-      int endIndex = startIndex + 5;
+  // void _loadMoreItems() {
+  //   setState(() {
+  //     int startIndex = _loadedItemCount + 1;
+  //     int endIndex = startIndex + 5;
 
-      // 서버에서 불러올 수 있는 최대 이미지 개수가 10개인 경우
-      if (endIndex > 10) {
-        endIndex = 10;
-        _hasMoreData = false; // 더 이상 불러올 데이터가 없음을 표시
-      }
+  //     // 서버에서 불러올 수 있는 최대 이미지 개수가 10개인 경우
+  //     if (endIndex > 10) {
+  //       endIndex = 10;
+  //       _hasMoreData = false; // 더 이상 불러올 데이터가 없음을 표시
+  //     }
 
-      for (int i = startIndex; i <= endIndex; i++) {
-        _images[_selectedTab].add('assets/uploaded_$i.png');
-      }
+  //     for (int i = startIndex; i <= endIndex; i++) {
+  //       _images[_selectedTab].add('assets/uploaded_$i.png');
+  //     }
 
-      _loadedItemCount += (endIndex - startIndex + 1);
+  //     _loadedItemCount += (endIndex - startIndex + 1);
 
-      // 만약 모든 데이터를 로드했다면, 더 이상 로드하지 않음
-      if (_loadedItemCount >= 10) {
-        _hasMoreData = false;
-      }
-    });
-  }
+  //     // 만약 모든 데이터를 로드했다면, 더 이상 로드하지 않음
+  //     if (_loadedItemCount >= 10) {
+  //       _hasMoreData = false;
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    List<Post> currentPosts = _posts[_selectedTab];
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -267,24 +261,38 @@ class _ProfilePageState extends State<ProfilePage> {
                       crossAxisCount: 3,
                       childAspectRatio: 1,
                     ),
-                    itemCount: _loadedItemCount,
+                    itemCount: currentPosts.length,
                     itemBuilder: (context, index) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage(_images[_selectedTab][index]),
-                            fit: BoxFit.cover,
+                      final post = currentPosts[index];
+                      final url = post.fileUrls[0];
+                      print(url);
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PostContainer(post: post),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(
+                                  'http://52.231.106.232:8000$url'),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       );
                     },
                   ),
-                  if (_loadedItemCount < _images[_selectedTab].length)
-                    Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: CircularProgressIndicator(),
-                    ),
-                  if (_loadedItemCount == 0) Text('로드할데이터없음')
+                  // if (_loadedItemCount < _images[_selectedTab].length)
+                  //   Padding(
+                  //     padding: EdgeInsets.all(16.0),
+                  //     child: CircularProgressIndicator(),
+                  //   ),
+                  // if (_loadedItemCount == 0) Text('로드할데이터없음')
                 ],
               ),
             ),

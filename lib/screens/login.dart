@@ -74,6 +74,7 @@ class LoginPage extends StatelessWidget {
       // 서버 응답이 성공
       if (response.statusCode == 200) {
         var responseBody = jsonDecode(response.body);
+        print('응답: $responseBody');
         print('accessToken: ${responseBody['access_token']}');
 
         // 서버에서 받은 액세스토큰을 저장
