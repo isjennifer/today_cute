@@ -1,5 +1,6 @@
-import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../models/post.dart';
 
 // Fetch posts from API
@@ -22,7 +23,7 @@ Future<List<Post>> fetchPostData() async {
   }
 }
 
-Future<void> deletePostData(String postId) async {
+Future<void> deletePostData(String postId, BuildContext context) async {
   try {
     final response = await http.delete(
       Uri.parse('http://52.231.106.232:8000/api/post/$postId'),
@@ -30,12 +31,12 @@ Future<void> deletePostData(String postId) async {
         'Content-Type': 'application/json; charset=UTF-8',
       },
     );
-
-    final Map<String, dynamic> decodedResponse =
-        jsonDecode(utf8.decode(response.bodyBytes));
-    print('deletePostData: $decodedResponse');
   } catch (e) {
     print('Error: $e');
+    // Show Snackbar with error message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: $e')),
+    );
   }
 }
 

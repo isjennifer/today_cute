@@ -37,6 +37,11 @@ class _ImageBodyState extends State<ImageBody> {
     });
   }
 
+  Future<void> _deletePost(String postId) async {
+    await deletePostData(postId, context);
+    fetchPosts(); // 삭제 후 새로고침
+  }
+
   @override
   Widget build(BuildContext context) {
     return posts.isEmpty
@@ -47,7 +52,10 @@ class _ImageBodyState extends State<ImageBody> {
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
-              return PostContainer(post: post);
+              return PostContainer(
+                post: post,
+                onDelete: () => _deletePost(post.id), // 삭제 콜백 함수 전달
+              );
             },
           );
   }

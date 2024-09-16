@@ -11,6 +11,7 @@ import '../models/post.dart';
 import '../services/api_service.dart';
 import '../widgets/post_container.dart';
 import '../widgets/post_container.dart';
+import '../utils/token_utils.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -32,11 +33,13 @@ class _ProfilePageState extends State<ProfilePage> {
   int _loadedItemCount = 0;
   final ScrollController _scrollController = ScrollController();
   bool _hasMoreData = true; // 더 불러올 데이터가 있는지 여부
+  String myId = '';
 
   @override
   void initState() {
     super.initState();
     fetchPosts();
+    _initializePreferences();
 
     // _scrollController.addListener(() {
     //   if (_scrollController.position.pixels ==
@@ -48,12 +51,22 @@ class _ProfilePageState extends State<ProfilePage> {
     // });
   }
 
-// 전체 포스팅 로드
+  Future<void> _initializePreferences() async {
+    myId = await getUserIdFromToken();
+    setState(() {
+      // 토큰의 정보 출력
+      print('Decoded Token: $myId');
+      // getTokenExpiryDate(token) 호출 필요 없음
+    });
+  }
+
+// 내 게시물 로드
   Future<void> fetchPosts() async {
     final postList =
         await fetchPostData(); // api_service.dart의 fetchPostData 호출
     setState(() {
-      upload_posts = postList;
+      upload_posts = postList.where((post) => post.userId == myId).toList();
+      print('upload_posts: $upload_posts');
       upload_posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       // _posts 리스트를 업데이트
       _posts[0] = upload_posts; // 첫 번째 탭의 포스팅 목록 업데이트
@@ -270,9 +283,22 @@ class _ProfilePageState extends State<ProfilePage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => PostContainer(post: post),
-                            ),
+                            MaterialPageRoute(builder: (context) {
+                              return Scaffold(
+                                appBar: AppBar(
+                                  title: Text('내 게시물'),
+                                ),
+                                body: SingleChildScrollView(
+                                  child: Container(
+                                    color: Color(0XFFFFFFFDE),
+                                    child: PostContainer(
+                                        post: post,
+                                        onDelete: () {} // 삭제 콜백 함수 없음
+                                        ),
+                                  ),
+                                ),
+                              );
+                            }),
                           );
                         },
                         child: Container(

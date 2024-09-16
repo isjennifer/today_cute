@@ -10,14 +10,45 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'video_body.dart';
 import '../models/post.dart';
 import '../services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import '../utils/token_utils.dart';
 
-class PostContainer extends StatelessWidget {
+class PostContainer extends StatefulWidget {
   final Post post;
+  final VoidCallback onDelete; // 콜백 함수 추가
 
-  const PostContainer({Key? key, required this.post}) : super(key: key);
+  const PostContainer({
+    Key? key,
+    required this.post,
+    required this.onDelete, // 콜백 함수 전달
+  }) : super(key: key);
+
+  @override
+  _PostContainerState createState() => _PostContainerState();
+}
+
+class _PostContainerState extends State<PostContainer> {
+  String myId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePreferences();
+  }
+
+  Future<void> _initializePreferences() async {
+    myId = await getUserIdFromToken();
+    setState(() {
+      // 토큰의 정보 출력
+      print('Decoded Token: $myId');
+      // getTokenExpiryDate(token) 호출 필요 없음
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final Post post = widget.post;
     double maxWidth = MediaQuery.of(context).size.width;
 
     final List<Color> colors = [
@@ -185,26 +216,28 @@ class PostContainer extends StatelessWidget {
                       ],
                     )),
               ),
-              post.userId == '66e6d22ce248f7e634aceb91'
-                  ? // 여기서 내 id와 userId가 동일하면 보여주기
-                  Container(
+              myId == post.userId
+                  ? Container(
                       padding: const EdgeInsets.only(
                           left: 25, top: 0, right: 25, bottom: 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TextButton(onPressed: () {}, child: Text('수정')),
                           TextButton(
                               onPressed: () {
-                                deletePostData(post.id);
+                                // Add functionality for edit
+                              },
+                              child: Text('수정')),
+                          TextButton(
+                              onPressed: () async {
+                                await deletePostData(post.id, context);
+                                widget.onDelete(); // 삭제 후 부모 위젯의 상태를 갱신
                               },
                               child: Text('삭제')),
                         ],
                       ),
                     )
-                  : SizedBox(
-                      height: 10,
-                    ) // 빈 공간을 반환
+                  : SizedBox(height: 10) // 빈 공간을 반환
             ],
           ),
           Transform.translate(
