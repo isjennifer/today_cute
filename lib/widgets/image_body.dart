@@ -7,26 +7,34 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'video_body.dart';
 
 class Post {
+  final String id;
   final String userId;
   final String title;
   final String content;
   final String nickName;
   final List<dynamic> tags;
   final List<dynamic> fileUrls;
+  late final PageController pageController;
 
   Post({
+    required this.id,
     required this.userId,
     required this.title,
     required this.content,
     required this.nickName,
     required this.tags,
     required this.fileUrls,
-  });
+  }) {
+    pageController = PageController();
+  }
 
   factory Post.fromJson(Map<String, dynamic> json) {
+    // print(json);
     return Post(
+      id: json['id'],
       userId: json['user_id'],
       title: json['title'],
       content: json['content'],
@@ -45,18 +53,12 @@ class ImageBody extends StatefulWidget {
 }
 
 class _ImageBodyState extends State<ImageBody> {
-  final PageController _pageController = PageController();
   List<Post> posts = [];
 
   @override
   void initState() {
     super.initState();
     fetchPostData();
-    // 페이지 이동 시마다 호출
-    // _pageController.addListener(() {
-    //   // 현재 페이지를 출력
-    //   print('현재 SmoothPageIndicator가 참조하는 페이지: ${_pageController.page}');
-    // });
   }
 
   Future<void> fetchPostData() async {
@@ -102,8 +104,7 @@ class _ImageBodyState extends State<ImageBody> {
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
-              // print('파일 url 0: ${post.fileUrls[0]}');
-              // print('파일 url 1: ${post.fileUrls[1]}');
+              // print('포스트: ${post.id}');
 
               return Container(
                   width: double.infinity,
@@ -147,20 +148,21 @@ class _ImageBodyState extends State<ImageBody> {
                                     width: double.infinity,
                                     height: maxWidth,
                                     child: ClipRect(
-                                      child: PageView(
-                                        controller: _pageController,
-                                        children: post.fileUrls.map((url) {
-                                          return Image.network(
-                                            'http://52.231.106.232:8000$url',
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
+                                        child: PageView.builder(
+                                      controller: post.pageController,
+                                      itemCount: post.fileUrls.length,
+                                      itemBuilder: (context, index) {
+                                        final url = post.fileUrls[index];
+                                        return Image.network(
+                                          'http://52.231.106.232:8000$url',
+                                        );
+                                      },
+                                    )),
                                   ),
                                   Container(
                                     padding: const EdgeInsets.only(top: 10.0),
                                     child: SmoothPageIndicator(
-                                      controller: _pageController,
+                                      controller: post.pageController,
                                       count: post.fileUrls.length,
                                       effect: ScrollingDotsEffect(
                                         dotHeight: 5.0,
@@ -172,7 +174,7 @@ class _ImageBodyState extends State<ImageBody> {
                                   ),
                                 ],
                               )
-                            : Text('dkssud'),
+                            : VideoBody(fileUrl: post.fileUrls[0]),
                         Container(
                           padding: const EdgeInsets.only(
                               left: 25, top: 15, right: 25, bottom: 5),
@@ -232,7 +234,7 @@ class _ImageBodyState extends State<ImageBody> {
                         ),
                         Container(
                           padding: const EdgeInsets.only(
-                              left: 15, right: 15, bottom: 20),
+                              left: 15, right: 15, bottom: 10),
                           child: TextButton(
                               onPressed: () {
                                 showModalBottomSheet(
@@ -261,6 +263,17 @@ class _ImageBodyState extends State<ImageBody> {
                                 ],
                               )),
                         ),
+                        Container(
+                          padding: const EdgeInsets.only(
+                              left: 25, top: 0, right: 25, bottom: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(onPressed: () {}, child: Text('수정')),
+                              TextButton(onPressed: () {}, child: Text('삭제')),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     Transform.translate(
@@ -279,65 +292,3 @@ class _ImageBodyState extends State<ImageBody> {
             });
   }
 }
-
-// class VideoBody extends StatefulWidget {
-//   const VideoBody({super.key});
-
-//   @override
-//   _VideoBodyState createState() => _VideoBodyState();
-// }
-
-// class _VideoBodyState extends State<VideoBody> {
-//   late VideoPlayerController _videoController;
-//   bool _isVideoVisible = false;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _videoController = VideoPlayerController.asset('http://52.231.106.232:8000${post.fileUrls[0]}')
-//       ..initialize().then((_) {
-//         setState(() {});
-//         _videoController.setLooping(true);
-//       }).catchError((error) {
-//         print('Error initializing video player: $error');
-//       });
-
-//     _videoController.addListener(() {
-//       if (_videoController.value.isInitialized) {
-//         setState(() {});
-//       }
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _videoController.dispose();
-//     super.dispose();
-//   }
-
-//   void _togglePlayPause() {
-//     setState(() {
-//       if (_videoController.value.isPlaying) {
-//         _videoController.pause();
-//       } else {
-//         _videoController.play();
-//       }
-//     });
-//   }
-
-//   String _getRemainingTime() {
-//     final duration = _videoController.value.duration;
-//     final position = _videoController.value.position;
-//     final remaining = duration - position;
-//     final minutes =
-//         remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
-//     final seconds =
-//         remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
-//     return '$minutes:$seconds';
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return 
-//   }
-// }

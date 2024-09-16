@@ -14,7 +14,6 @@ class HomePage extends StatelessWidget {
         child: ListView(
           children: [
             ImageBody(),
-            VideoBody(),
           ],
         ),
       ),
