@@ -33,13 +33,9 @@ class _ImageBodyState extends State<ImageBody> {
         await fetchPostData(); // api_service.dart의 fetchPostData 호출
     setState(() {
       posts = postList;
+      print('postList:$postList');
       posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     });
-  }
-
-  Future<void> _deletePost(String postId) async {
-    await deletePostData(postId, context);
-    fetchPosts(); // 삭제 후 새로고침
   }
 
   @override
@@ -54,7 +50,7 @@ class _ImageBodyState extends State<ImageBody> {
               final post = posts[index];
               return PostContainer(
                 post: post,
-                onDelete: () => _deletePost(post.id), // 삭제 콜백 함수 전달
+                // onDelete: () => _deletePost(post.id), // 삭제 콜백 함수 전달
               );
             },
           );

@@ -34,6 +34,8 @@ class _ProfilePageState extends State<ProfilePage> {
   final ScrollController _scrollController = ScrollController();
   bool _hasMoreData = true; // 더 불러올 데이터가 있는지 여부
   String myId = '';
+  String nick_name = '';
+  String email = '';
 
   @override
   void initState() {
@@ -55,8 +57,29 @@ class _ProfilePageState extends State<ProfilePage> {
     myId = await getUserIdFromToken();
     setState(() {
       // 토큰의 정보 출력
-      print('Decoded Token: $myId');
+      print('profile.dart-Decoded Token: $myId');
       // getTokenExpiryDate(token) 호출 필요 없음
+    });
+    await fetchMyInfo();
+  }
+
+  Future<void> fetchMyInfo() async {
+    // print('profile.dart-fetchMyInfo전: $myId');
+    final decodedInfo = await fetchId(myId);
+    // print('profile.dart-fetchMyInfo후: $myId');
+
+    setState(() {
+      // 사용자 정보를 myInfo에 저장
+      if (decodedInfo.isNotEmpty) {
+        nick_name = decodedInfo['nick_name'];
+        email = decodedInfo['email'];
+      } else {
+        nick_name = '이름 없음';
+        email = '이메일 없음';
+      }
+
+      print('내 닉네임: $nick_name');
+      print('내 이메일: $email');
     });
   }
 
@@ -66,7 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
         await fetchPostData(); // api_service.dart의 fetchPostData 호출
     setState(() {
       upload_posts = postList.where((post) => post.userId == myId).toList();
-      print('upload_posts: $upload_posts');
+      // print('upload_posts: $upload_posts');
       upload_posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       // _posts 리스트를 업데이트
       _posts[0] = upload_posts; // 첫 번째 탭의 포스팅 목록 업데이트
@@ -97,6 +120,60 @@ class _ProfilePageState extends State<ProfilePage> {
   //     }
   //   });
   // }
+
+  Future<void> _deletePostDialog(BuildContext context, String postId) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // 모달 밖을 클릭하면 닫힘
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Container(
+            width: 400,
+            height: 200,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(Icons.warning),
+                  SizedBox(height: 10),
+                  Text(
+                    '게시물을 삭제하시겠습니까?',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop(); // 다이얼로그 닫기
+                          await deletePostData(context, postId); // 게시물 삭제
+                        },
+                        child: Text('삭제'),
+                      ),
+                      SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // 모달 창 닫기
+                        },
+                        child: Text('취소'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -171,11 +248,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           SizedBox(height: 30),
                           Text(
-                            '임현주',
+                            nick_name,
                             style: TextStyle(fontSize: 30),
                           ),
                           Text(
-                            'hyeonjoo@naver.com',
+                            email,
                             style: TextStyle(fontSize: 20),
                           ),
                         ],
@@ -277,8 +354,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     itemCount: currentPosts.length,
                     itemBuilder: (context, index) {
                       final post = currentPosts[index];
-                      final url = post.fileUrls[0];
-                      print(url);
+                      final file = post.files;
+                      final fileUrls = file.map((file) => file['url']).toList();
+
                       return InkWell(
                         onTap: () {
                           Navigator.push(
@@ -286,15 +364,65 @@ class _ProfilePageState extends State<ProfilePage> {
                             MaterialPageRoute(builder: (context) {
                               return Scaffold(
                                 appBar: AppBar(
-                                  title: Text('내 게시물'),
-                                ),
+                                    title: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '내 게시물',
+                                        textAlign:
+                                            TextAlign.center, // 텍스트를 가운데 정렬
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Container(
+                                              padding: EdgeInsets.all(16),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ListTile(
+                                                    leading: Icon(Icons.edit),
+                                                    title: Text('수정'),
+                                                    onTap: () {
+                                                      // 수정 기능 구현
+                                                      Navigator.pop(
+                                                          context); // 팝업 닫기
+                                                    },
+                                                  ),
+                                                  ListTile(
+                                                    leading: Icon(Icons.delete),
+                                                    title: Text('삭제'),
+                                                    onTap: () async {
+                                                      // 삭제 기능 구현
+                                                      await _deletePostDialog(
+                                                          context, post.id);
+                                                      Navigator.of(context)
+                                                          .pop(); // 팝업 닫기
+                                                      await fetchPosts();
+                                                      Navigator.of(context)
+                                                          .pop(); // 삭제 후 이전 화면으로 돌아가기
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                      icon: Icon(Icons.more_vert),
+                                    ),
+                                  ],
+                                )),
                                 body: SingleChildScrollView(
                                   child: Container(
                                     color: Color(0XFFFFFFFDE),
                                     child: PostContainer(
-                                        post: post,
-                                        onDelete: () {} // 삭제 콜백 함수 없음
-                                        ),
+                                      post: post,
+                                      // onDelete: () {} // 삭제 콜백 함수 없음
+                                    ),
                                   ),
                                 ),
                               );
@@ -305,7 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           decoration: BoxDecoration(
                             image: DecorationImage(
                               image: NetworkImage(
-                                  'http://52.231.106.232:8000$url'),
+                                  'http://52.231.106.232:8000${fileUrls[0]}'),
                               fit: BoxFit.cover,
                             ),
                           ),

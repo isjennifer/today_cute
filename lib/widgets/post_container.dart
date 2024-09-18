@@ -13,15 +13,16 @@ import '../services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import '../utils/token_utils.dart';
+import '../screens/profile.dart';
 
 class PostContainer extends StatefulWidget {
   final Post post;
-  final VoidCallback onDelete; // 콜백 함수 추가
+  // final VoidCallback onDelete; // 콜백 함수 추가
 
   const PostContainer({
     Key? key,
     required this.post,
-    required this.onDelete, // 콜백 함수 전달
+    // required this.onDelete, // 콜백 함수 전달
   }) : super(key: key);
 
   @override
@@ -49,6 +50,11 @@ class _PostContainerState extends State<PostContainer> {
   @override
   Widget build(BuildContext context) {
     final Post post = widget.post;
+    final file = post.files;
+    final fileUrls = file.map((file) => file['url']).toList();
+    // print('post_container.dart-post:${post.files}');
+    // print('post_container.dart-file:${file.map((file) => file['url'])}');
+    // print('post_container.dart-fileUrls:$fileUrls');
     double maxWidth = MediaQuery.of(context).size.width;
 
     final List<Color> colors = [
@@ -91,10 +97,10 @@ class _PostContainerState extends State<PostContainer> {
                   ],
                 ),
               ),
-              (post.fileUrls[0].endsWith('jpg') ||
-                      post.fileUrls[0].endsWith('jpeg') ||
-                      post.fileUrls[0].endsWith('png') ||
-                      post.fileUrls[0].endsWith('gif'))
+              (fileUrls[0].endsWith('jpg') ||
+                      fileUrls[0].endsWith('jpeg') ||
+                      fileUrls[0].endsWith('png') ||
+                      fileUrls[0].endsWith('gif'))
                   ? Column(
                       children: [
                         Container(
@@ -105,9 +111,9 @@ class _PostContainerState extends State<PostContainer> {
                           child: ClipRect(
                               child: PageView.builder(
                             controller: post.pageController,
-                            itemCount: post.fileUrls.length,
+                            itemCount: fileUrls.length,
                             itemBuilder: (context, index) {
-                              final url = post.fileUrls[index];
+                              final url = fileUrls[index];
                               return Image.network(
                                 'http://52.231.106.232:8000$url',
                               );
@@ -118,7 +124,7 @@ class _PostContainerState extends State<PostContainer> {
                           padding: const EdgeInsets.only(top: 10.0),
                           child: SmoothPageIndicator(
                             controller: post.pageController,
-                            count: post.fileUrls.length,
+                            count: fileUrls.length,
                             effect: ScrollingDotsEffect(
                               dotHeight: 5.0,
                               dotWidth: 5.0,
@@ -129,7 +135,7 @@ class _PostContainerState extends State<PostContainer> {
                         ),
                       ],
                     )
-                  : VideoBody(fileUrl: post.fileUrls[0]),
+                  : VideoBody(fileUrl: fileUrls[0]),
               Container(
                 padding: const EdgeInsets.only(
                     left: 25, top: 15, right: 25, bottom: 5),
@@ -216,28 +222,27 @@ class _PostContainerState extends State<PostContainer> {
                       ],
                     )),
               ),
-              myId == post.userId
-                  ? Container(
-                      padding: const EdgeInsets.only(
-                          left: 25, top: 0, right: 25, bottom: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                              onPressed: () {
-                                // Add functionality for edit
-                              },
-                              child: Text('수정')),
-                          TextButton(
-                              onPressed: () async {
-                                await deletePostData(post.id, context);
-                                widget.onDelete(); // 삭제 후 부모 위젯의 상태를 갱신
-                              },
-                              child: Text('삭제')),
-                        ],
-                      ),
-                    )
-                  : SizedBox(height: 10) // 빈 공간을 반환
+              // myId == post.userId
+              //     ? Container(
+              //         padding: const EdgeInsets.only(
+              //             left: 25, top: 0, right: 25, bottom: 20),
+              //         child: Row(
+              //           mainAxisAlignment: MainAxisAlignment.end,
+              //           children: [
+              //             TextButton(
+              //                 onPressed: () {
+              //                   // Add functionality for edit
+              //                 },
+              //                 child: Text('수정')),
+              //             TextButton(
+              //                 onPressed: () async {
+              //                   await _deletePostDialog(context);
+              //                 },
+              //                 child: Text('삭제')),
+              //           ],
+              //         ),
+              //       )
+              //     : SizedBox(height: 10) // 빈 공간을 반환
             ],
           ),
           Transform.translate(
