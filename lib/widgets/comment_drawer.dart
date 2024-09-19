@@ -1,7 +1,29 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../utils/expandable_text.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-class CommentDrawer extends StatelessWidget {
+class CommentDrawer extends StatefulWidget {
+  final String postId;
+
+  CommentDrawer({super.key, required this.postId});
+
+  @override
+  _CommentDrawerState createState() => _CommentDrawerState();
+}
+
+
+class _CommentDrawerState extends State<CommentDrawer> {
+  final TextEditingController _commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentController.dispose(); // 위젯이 사라질 때 컨트롤러 해제
+    super.dispose();
+  }
+
   Future<void> _commentPostDialog(BuildContext context) async {
     return showDialog<void>(
       context: context,
@@ -36,7 +58,8 @@ class CommentDrawer extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          await _sendPostRequest();
                           Navigator.of(context).pop(); // 모달 창 닫기
                         },
                         child: Text('예'),
@@ -57,6 +80,45 @@ class CommentDrawer extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _sendPostRequest() async {
+    // SharedPreferences에서 accessToken 가져오기
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? accessToken = prefs.getString('accessToken');
+     final commentText = _commentController.text.trim();  
+
+    print("댓글 생성 요청 시작 내용:$commentText");
+    // 만약 accessToken이 없다면, 예외 처리
+    if (accessToken == null) {
+      print('Access token이 없습니다.');
+      return;
+    } else {
+      print('Access token: $accessToken'); // 이 부분이 제대로 출력되는지 확인
+    }
+
+    final url = Uri.parse(
+        'http://52.231.106.232:8000/api/post/${widget.postId}/comment'); // 실제 서버 URL로 변경
+    final body = jsonEncode({
+      'content': commentText, // 필요한 데이터로 수정
+    });
+
+    try {
+      final response = await http.post(url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken', // Bearer 토큰 추가
+          },
+          body: body);
+      if (response.statusCode == 200) {
+        print('POST 요청 성공: ${response.body}');
+        _commentController.clear(); // 댓글 전송 후 입력란 초기화
+      } else {
+        print('POST 요청 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('댓글 POST 요청 중 오류 발생: $e');
+    }
   }
 
   @override
@@ -87,6 +149,7 @@ class CommentDrawer extends StatelessWidget {
             children: [
               Expanded(
                 child: TextField(
+                  controller: _commentController,
                   decoration: InputDecoration(
                     hintText: ' 댓글을 입력하세요...',
                     border: OutlineInputBorder(

@@ -200,7 +200,7 @@ class _PostContainerState extends State<PostContainer> {
                         context: context,
                         isScrollControlled: false,
                         builder: (BuildContext context) {
-                          return CommentDrawer();
+                          return CommentDrawer(postId: post.id);
                         },
                       );
                     },
