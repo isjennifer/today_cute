@@ -14,6 +14,8 @@ import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'dart:async';
 import 'firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_service.dart';
+import '../utils/token_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -177,6 +179,8 @@ class _HomePageState extends State<PageFrame> {
   void initState() {
     super.initState();
 
+    _initializePreferences();
+
     // 포그라운드 알림 처리
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       setState(() {
@@ -187,6 +191,34 @@ class _HomePageState extends State<PageFrame> {
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
       }
+    });
+  }
+
+  String myId = '';
+  Future<void> _initializePreferences() async {
+    myId = await getUserIdFromToken();
+    setState(() {
+      // 토큰의 정보 출력
+      print('profile.dart-Decoded Token: $myId');
+      // getTokenExpiryDate(token) 호출 필요 없음
+    });
+    await fetchMyInfo();
+  }
+
+  String feather = '';
+  Future<void> fetchMyInfo() async {
+    // print('profile.dart-fetchMyInfo전: $myId');
+    final decodedInfo = await fetchId(myId);
+    // print('profile.dart-fetchMyInfo후: $myId');
+    print('내정보: $decodedInfo');
+    setState(() {
+      // 사용자 정보를 myInfo에 저장
+      if (decodedInfo.isNotEmpty) {
+        feather = decodedInfo['feather'].toString();
+      } else {
+        feather = '';
+      }
+      print('내 깃털: $feather');
     });
   }
 
@@ -291,7 +323,7 @@ class _HomePageState extends State<PageFrame> {
                                 width: 50,
                               ),
                               Text(
-                                '20',
+                                feather,
                                 style: TextStyle(fontSize: 20),
                               ),
                               SizedBox(width: 10),
