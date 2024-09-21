@@ -59,14 +59,14 @@ class _CommentContainerState extends State<CommentContainer> {
           },
           body: body);
       if (response.statusCode == 200) {
-        print('POST 요청 성공: ${response.body}');
+        print('PUT 요청 성공: ${response.body}');
         _commentController.clear(); // 댓글 전송 후 입력란 초기화
         widget.onCommentUpdated(); // 댓글 수정 후 부모에게 알림
       } else {
-        print('POST 요청 실패: ${response.statusCode}');
+        print('PUT 요청 실패: ${response.statusCode}');
       }
     } catch (e) {
-      print('댓글 POST 요청 중 오류 발생: $e');
+      print('댓글 수정 요청 중 오류 발생: $e');
     }
   }
 
