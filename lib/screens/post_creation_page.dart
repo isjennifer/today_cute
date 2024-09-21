@@ -93,6 +93,28 @@ class _PostCreationPageState extends State<PostCreationPage> {
       print('Access token: $accessToken'); // 이 부분이 제대로 출력되는지 확인
     }
 
+    // 제목, 내용, 태그 검증
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('제목을 입력하세요.')),
+      );
+      return;
+    }
+
+    if (_contentController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('내용을 입력하세요.')),
+      );
+      return;
+    }
+
+    if (_tagsController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('태그를 입력하세요.')),
+      );
+      return;
+    }
+
     final uri = Uri.parse('http://52.231.106.232:8000/api/post/'); // 서버 주소
 
     var request = http.MultipartRequest('POST', uri);
@@ -146,6 +168,9 @@ class _PostCreationPageState extends State<PostCreationPage> {
       print('업로드 성공');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('게시물이 업로드되었습니다.')),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('깃털을 한개 얻었습니다.')),
       );
       // 업로드 성공 후 화면을 종료
       Navigator.pop(context);
