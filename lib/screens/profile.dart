@@ -13,6 +13,7 @@ import '../widgets/post_container.dart';
 import '../widgets/post_container.dart';
 import '../utils/token_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'post_edit_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -394,8 +395,19 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     title: Text('수정'),
                                                     onTap: () {
                                                       // 수정 기능 구현
-                                                      Navigator.pop(
-                                                          context); // 팝업 닫기
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                PostEditPage(
+                                                                    post:
+                                                                        post), // 수정할 post 전달
+                                                          ));
+                                                      Navigator.of(context)
+                                                          .pop(); // 팝업 닫기
+                                                      // await fetchPosts();
                                                     },
                                                   ),
                                                   ListTile(
