@@ -12,6 +12,7 @@ import '../services/api_service.dart';
 import '../widgets/post_container.dart';
 import '../widgets/post_container.dart';
 import '../utils/token_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -122,6 +123,9 @@ class _ProfilePageState extends State<ProfilePage> {
   // }
 
   Future<void> _deletePostDialog(BuildContext context, String postId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? accessToken = prefs.getString('accessToken');
+
     return showDialog<void>(
       context: context,
       barrierDismissible: true, // 모달 밖을 클릭하면 닫힘
@@ -153,7 +157,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       ElevatedButton(
                         onPressed: () async {
                           Navigator.of(context).pop(); // 다이얼로그 닫기
-                          await deletePostData(context, postId); // 게시물 삭제
+                          await deletePostData(
+                              context, postId, accessToken); // 게시물 삭제
+                          await fetchPosts();
                         },
                         child: Text('삭제'),
                       ),
@@ -401,7 +407,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                           context, post.id);
                                                       Navigator.of(context)
                                                           .pop(); // 팝업 닫기
-                                                      await fetchPosts();
+
                                                       Navigator.of(context)
                                                           .pop(); // 삭제 후 이전 화면으로 돌아가기
                                                     },

@@ -27,14 +27,55 @@ Future<List<Post>> fetchPostData() async {
   }
 }
 
-Future<void> deletePostData(BuildContext context, String postId) async {
+Future<void> deletePostData(
+    BuildContext context, String postId, String? token) async {
+  print('deletePostData: $token');
   try {
     final response = await http.delete(
       Uri.parse('http://52.231.106.232:8000/api/post/$postId'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token', // Authorization 헤더 추가
       },
     );
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('게시물이 삭제되었습니다.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('게시물 삭제 실패')));
+      print('게시물 삭제 실패 ${response.body}');
+    }
+  } catch (e) {
+    print('Error: $e');
+    // Show Snackbar with error message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: $e')),
+    );
+  }
+}
+
+Future<void> PutPostData(
+    BuildContext context, String postId, String? token) async {
+  print('deletePostData: $token');
+  try {
+    final response = await http.put(
+      Uri.parse('http://52.231.106.232:8000/api/post/$postId'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token', // Authorization 헤더 추가
+      },
+    );
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('게시물이 수정되었습니다.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('게시물 수정 실패')));
+      print('게시물 수정 실패 ${response.body}');
+    }
   } catch (e) {
     print('Error: $e');
     // Show Snackbar with error message
