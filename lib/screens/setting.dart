@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
+import '../main.dart';
 
 class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
@@ -12,7 +13,7 @@ class SettingPage extends StatelessWidget {
     await prefs.remove('accessToken');
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
+      MaterialPageRoute(builder: (context) => AuthCheck()),
     );
   }
 
