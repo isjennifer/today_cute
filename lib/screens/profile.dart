@@ -393,11 +393,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   ListTile(
                                                     leading: Icon(Icons.edit),
                                                     title: Text('수정'),
-                                                    onTap: () {
+                                                    onTap: () async {
                                                       // 수정 기능 구현
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      Navigator.push(
+                                                      await Navigator.push(
                                                           context,
                                                           MaterialPageRoute(
                                                             builder: (context) =>
@@ -407,7 +405,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                           ));
                                                       Navigator.of(context)
                                                           .pop(); // 팝업 닫기
-                                                      // await fetchPosts();
+                                                      await fetchPosts();
+                                                      Navigator.of(context)
+                                                          .pop(); // 삭제 후 이전 화면으로 돌아가기
                                                     },
                                                   ),
                                                   ListTile(
