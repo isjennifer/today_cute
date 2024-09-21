@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/post.dart';
+import '../models/comment.dart';
 
 // Fetch posts from API
 Future<List<Post>> fetchPostData() async {
@@ -66,5 +67,28 @@ Future<Map<String, dynamic>> fetchId(String id) async {
   } catch (e) {
     print('fechId-Error: $e');
     return {}; // 빈 Map 반환
+  }
+}
+
+// Fetch comments from API
+Future<List<Comment>> fetchCommentData(String postId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('http://52.231.106.232:8000/api/post/$postId/comments'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    final List<dynamic> decodedResponse =
+        jsonDecode(utf8.decode(response.bodyBytes));
+
+    // 'comments' 키가 존재하고 null이 아닐 경우 처리
+    final List<dynamic> comments = decodedResponse ?? []; // null인 경우 빈 리스트로 대체
+    print('api_service.dart-comments:$comments');
+    return comments.map((json) => Comment.fromJson(json)).toList();
+  } catch (e) {
+    print('fetchCommentData-Error: $e');
+    return []; // Return an empty list on error
   }
 }

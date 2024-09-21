@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:today_cute/models/comment.dart';
 import '../utils/expandable_text.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_service.dart';
 
 class CommentDrawer extends StatefulWidget {
   final String postId;
@@ -14,9 +16,24 @@ class CommentDrawer extends StatefulWidget {
   _CommentDrawerState createState() => _CommentDrawerState();
 }
 
-
 class _CommentDrawerState extends State<CommentDrawer> {
   final TextEditingController _commentController = TextEditingController();
+  List<Comment> comments = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchComments();
+  }
+
+  Future<void> fetchComments() async {
+    final commentList = await fetchCommentData(widget.postId); // 댓글 가져오기 호출
+    setState(() {
+      comments = commentList;
+      print('postList:$commentList');
+      comments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    });
+  }
 
   @override
   void dispose() {
@@ -86,7 +103,7 @@ class _CommentDrawerState extends State<CommentDrawer> {
     // SharedPreferences에서 accessToken 가져오기
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('accessToken');
-     final commentText = _commentController.text.trim();  
+    final commentText = _commentController.text.trim();
 
     print("댓글 생성 요청 시작 내용:$commentText");
     // 만약 accessToken이 없다면, 예외 처리
@@ -134,13 +151,22 @@ class _CommentDrawerState extends State<CommentDrawer> {
         mainAxisSize: MainAxisSize.min, // 내용에 맞게 서랍의 높이를 조절
         children: [
           Expanded(
-            child: ListView(
-              children: [
-                Comment(),
-                Comment(),
-                Comment(),
-              ],
-            ),
+            child: comments.isEmpty
+                ? Center(
+                    child: Text(
+                      '아직 댓글이 없습니다.', // 댓글이 없을 때 표시할 메시지
+                      style: TextStyle(fontSize: 16.0, color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: comments.length, // comments 리스트의 길이만큼 아이템 생성
+                    itemBuilder: (context, index) {
+                      final comment =
+                          comments[index]; // 각 index에 해당하는 comment 가져오기
+                      return CommentContainer(
+                          comment: comment); // CommentContainer에 comment 전달
+                    },
+                  ),
           ),
           SizedBox(height: 16.0),
           Divider(),
@@ -178,12 +204,17 @@ class _CommentDrawerState extends State<CommentDrawer> {
   }
 }
 
-class Comment extends StatefulWidget {
+class CommentContainer extends StatefulWidget {
+  final Comment comment; // Comment 객체를 받을 수 있도록 수정
+
+  const CommentContainer(
+      {super.key, required this.comment}); // 생성자에서 comment를 받도록 수정
+
   @override
-  _CommentState createState() => _CommentState();
+  _CommentContainerState createState() => _CommentContainerState();
 }
 
-class _CommentState extends State<Comment> {
+class _CommentContainerState extends State<CommentContainer> {
   bool isExpanded = true;
 
   @override
@@ -199,7 +230,7 @@ class _CommentState extends State<Comment> {
           // 프로필 이미지를 원형으로 만듭니다.
           ClipOval(
             child: Image.asset(
-              'assets/cat.png',
+              'assets/cat.png', // TODO:댓글 사용자로 이미지 받아오기
               width: 50,
               height: 50,
               fit: BoxFit.cover,
@@ -216,7 +247,7 @@ class _CommentState extends State<Comment> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '아이디',
+                        widget.comment.nickName,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Row(
@@ -261,8 +292,8 @@ class _CommentState extends State<Comment> {
                 SizedBox(height: 10),
                 Container(
                     child: ExpandableText(
-                        text:
-                            '이것은 아주아주 긴 댓글입니다라라라라ㅏㄹ라ㅏ랄ㄹㄹㄹdwefwefwe두줄이넘어가면 더보기 접기가 생성된답니다라라라라ㅏ라라라')),
+                  text: widget.comment.content,
+                )),
               ],
             ),
           ),
