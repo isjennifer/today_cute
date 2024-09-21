@@ -9,6 +9,7 @@ class Post {
   final List<dynamic> tags;
   final List<dynamic> files;
   final DateTime createdAt;
+  final int likes; 
   late final PageController pageController;
 
   Post({
@@ -20,6 +21,7 @@ class Post {
     required this.tags,
     required this.files,
     required this.createdAt,
+    this.likes = 0, // 기본값을 0으로 설정
   }) {
     pageController = PageController();
   }
@@ -35,6 +37,7 @@ class Post {
       tags: json['tags'],
       files: json['files'],
       createdAt: DateTime.parse(json['created_at']),
+      likes: json.containsKey('likes_count') ? json['likes_count'] : 0, // 좋아요 필드가 있을 때만 값을 사용, 없으면 0
     );
   }
 }

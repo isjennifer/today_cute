@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:today_cute/models/post.dart';
+import 'package:today_cute/services/api_service.dart';
 
 class SearchPage extends StatelessWidget {
   const SearchPage({super.key});
@@ -76,6 +78,8 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
   late final List<ScrollController> _scrollControllers;
   late final List<AnimationController> _animationControllers;
   late final List<Animation<Offset>> _scrollAnimations;
+  List<Post> posts = [];
+
 
   final List<String> titles = [
     '우리집 강아지 너무 귀엽지 않나요 세상사람들 여기와서 모두 보고 가세요',
@@ -90,6 +94,7 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    fetchPopularPosts();
 
     // 리스트 초기화
     _scrollControllers = [];
@@ -97,11 +102,11 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
     _scrollAnimations = [];
 
     // 컨트롤러 초기화
-    for (int i = 0; i < titles.length; i++) {
+    for (int i = 0; i < posts.length; i++) {
       _scrollControllers.add(ScrollController());
       _animationControllers.add(AnimationController(
         vsync: this,
-        duration: Duration(seconds: (titles[i].length / 6).toInt()),
+        duration: Duration(seconds: (posts[i].title.length / 6).toInt()),
       ));
 
       _scrollAnimations.add(Tween<Offset>(
@@ -135,6 +140,16 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> fetchPopularPosts() async {
+    final postList =
+        await fetchPopularPostData(); // api_service.dart의 fetchPostData 호출
+    setState(() {
+      posts = postList;
+      print('popularPostList:$postList');
+      posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    });
+  }
+
   @override
   void dispose() {
     // 모든 컨트롤러 해제
@@ -157,6 +172,7 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
   }
 
   Widget _buildScrollingRow(int index) {
+    final post = posts[index]; // 수정: 게시글 데이터 사용
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 10),
@@ -175,7 +191,7 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
               child: Row(
                 children: [
                   Text(
-                    titles[index],
+                    post.title,
                     style: TextStyle(fontSize: 18),
                   ),
                 ],
@@ -193,7 +209,7 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
                   color: Colors.pink,
                 ),
                 Text(
-                  _formatLikes(likes[index]),
+                  _formatLikes(post.likes),
                 ),
               ],
             ),
@@ -233,7 +249,7 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Text(
-                          '실시간 인기순위',
+                          '일간 인기순위',
                           style: TextStyle(color: Colors.black, fontSize: 18),
                         ),
                         Text(
@@ -244,7 +260,7 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
                     ),
                     SizedBox(height: 10),
                     ...List.generate(
-                      titles.length,
+                      posts.length,
                       (index) => _buildScrollingRow(index),
                     ),
                   ],
