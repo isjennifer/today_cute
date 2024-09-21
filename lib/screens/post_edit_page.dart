@@ -52,7 +52,6 @@ class _PostEditPageState extends State<PostEditPage> {
       print('Access token이 없습니다.');
       return;
     }
-    print(widget.post.id);
 
     final uri = Uri.parse(
         'http://52.231.106.232:8000/api/post/${widget.post.id}'); // 서버 주소
@@ -90,6 +89,26 @@ class _PostEditPageState extends State<PostEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    void _onTagChanged(String value) {
+      // 태그를 공백이나 쉼표로 분리
+      List<String> tags = value
+          .split(RegExp(r'[,\s]+'))
+          .where((tag) => tag.isNotEmpty)
+          .toList();
+
+      // 태그 개수를 10개로 제한
+      if (tags.length > 10) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('태그는 최대 10개까지 입력할 수 있습니다.')),
+        );
+        // 10개 이상의 태그가 입력되면, 제한된 10개 태그로 입력값을 조정
+        _tagsController.text = tags.sublist(0, 10).join(', ');
+        _tagsController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _tagsController.text.length),
+        );
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('게시물 수정'),
@@ -124,9 +143,10 @@ class _PostEditPageState extends State<PostEditPage> {
                   labelText: '태그 (쉼표(,)로 구분하여 작성)',
                   border: OutlineInputBorder(),
                 ),
+                onChanged: _onTagChanged,
               ),
               SizedBox(height: 20),
-              Text('현재 이미지와 동영상은 변경할 수 없습니다.'),
+              Text('이미지 또는 동영상은 수정할 수 없습니다.'),
             ],
           ),
         ),

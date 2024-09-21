@@ -170,8 +170,9 @@ class _PostContainerState extends State<PostContainer> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: post.tags[0]
+                    children: post.tags
                         .toString()
+                        .substring(1, post.tags.toString().length - 1)
                         .split(',')
                         .map<Widget>((tag) => Container(
                               margin: EdgeInsets.only(right: 5),
