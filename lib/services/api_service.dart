@@ -27,6 +27,36 @@ Future<List<Post>> fetchPostData() async {
   }
 }
 
+// Fetch posts from API
+Future<List<Post>> searchPostData(
+    {String? search, String sortBy = 'created_at'}) async {
+  try {
+    // 쿼리 파라미터를 포함한 URI 생성
+    final uri = Uri.http('52.231.106.232:8000', '/api/post/search', {
+      'search': search ?? '', // 검색어가 없으면 빈 값 전달
+      'sort_by': sortBy, // 정렬 기준 (created_at 또는 likes)
+    });
+
+    final response = await http.get(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    final List<dynamic> decodedResponse =
+        jsonDecode(utf8.decode(response.bodyBytes));
+
+    // 'posts' 키가 존재하고 null이 아닐 경우 처리
+    final List<dynamic> posts = decodedResponse ?? []; // null인 경우 빈 리스트로 대체
+    print('api_service.dart-posts:$posts');
+    return posts.map((json) => Post.fromJson(json)).toList();
+  } catch (e) {
+    print('fetchPostData-Error: $e');
+    return []; // Return an empty list on error
+  }
+}
+
 Future<void> deletePostData(
     BuildContext context, String postId, String? token) async {
   print('deletePostData: $token');
@@ -133,7 +163,6 @@ Future<List<Comment>> fetchCommentData(String postId) async {
     return []; // Return an empty list on error
   }
 }
-
 
 // Fetch comments from API
 Future<List<Post>> fetchPopularPostData() async {
