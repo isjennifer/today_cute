@@ -186,3 +186,29 @@ Future<List<Post>> fetchPopularPostData() async {
     return []; // Return an empty list on error
   }
 }
+
+Future<void> likePost(
+    BuildContext context, String postId, String? token) async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://52.231.106.232:8000/api/post/$postId/like'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      // 좋아요 성공 처리
+      print('좋아요 성공');
+    } else {
+      // 오류 처리
+      print('좋아요 실패 ${response.body}');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('좋아요 실패')));
+    }
+  } catch (e) {
+    print('Error: $e');
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Error: $e')));
+  }
+}

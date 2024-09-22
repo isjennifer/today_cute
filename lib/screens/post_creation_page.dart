@@ -11,6 +11,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mime/mime.dart'; // for detecting file type
+import '../main.dart';
 
 class PostCreationPage extends StatefulWidget {
   final List<File> images;
@@ -172,8 +173,11 @@ class _PostCreationPageState extends State<PostCreationPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('깃털을 한개 얻었습니다.')),
       );
-      // 업로드 성공 후 화면을 종료
-      Navigator.pop(context);
+      // 업로드 성공 후 피드 페이지로 이동 (수정 필요)
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => AuthCheck()),
+      );
     } else {
       // 업로드 실패 처리
       print('Fail Response: $responseString');
@@ -355,7 +359,7 @@ class _PostCreationPageState extends State<PostCreationPage> {
               '게시물 업로드',
               style: TextStyle(fontSize: 18),
             ),
-            onPressed: () {
+            onPressed: () async {
               // 업로드 로직 추가
               uploadPost(context);
             },

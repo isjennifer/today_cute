@@ -31,6 +31,7 @@ class PostContainer extends StatefulWidget {
 
 class _PostContainerState extends State<PostContainer> {
   String myId = '';
+  bool _isLiked = false; // 좋아요 상태를 저장하는 변수
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _PostContainerState extends State<PostContainer> {
       // 토큰의 정보 출력
       print('Decoded Token: $myId');
       // getTokenExpiryDate(token) 호출 필요 없음
+      _isLiked = widget.post.likedUsersId.contains(myId); // 초기화
     });
   }
 
@@ -151,7 +153,42 @@ class _PostContainerState extends State<PostContainer> {
                     ),
                     Row(
                       children: [
-                        Icon(Icons.favorite_border),
+                        IconButton(
+                          onPressed: () async {
+                            setState(() {
+                              _isLiked = !_isLiked;
+                              if (_isLiked) {
+                                widget.post.likedUsersId.add(myId);
+                              } else {
+                                widget.post.likedUsersId.remove(myId);
+                              }
+                            });
+                            final prefs = await SharedPreferences.getInstance();
+                            final token = prefs.getString('accessToken') ?? '';
+
+                            try {
+                              if (_isLiked) {
+                                await likePost(context, widget.post.id, token);
+                              } else {
+                                await likePost(context, widget.post.id, token);
+                              }
+                            } catch (e) {
+                              // 오류 발생 시 상태 복구
+                              setState(() {
+                                _isLiked = !_isLiked;
+                                if (_isLiked) {
+                                  widget.post.likedUsersId.add(myId);
+                                } else {
+                                  widget.post.likedUsersId.remove(myId);
+                                }
+                              });
+                            }
+                          },
+                          icon: Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: _isLiked ? Colors.pink : null,
+                          ),
+                        ),
                       ],
                     ),
                   ],
