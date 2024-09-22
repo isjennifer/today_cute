@@ -25,6 +25,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   int _selectedTab = 0;
   List<Post> upload_posts = [];
+  List<Post> liked_posts = [];
 
 // 각 탭에 대응하는 포스팅 목록
   final List<List<Post>> _posts = [
@@ -95,6 +96,12 @@ class _ProfilePageState extends State<ProfilePage> {
       upload_posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       // _posts 리스트를 업데이트
       _posts[0] = upload_posts; // 첫 번째 탭의 포스팅 목록 업데이트
+
+      liked_posts =
+          postList.where((post) => post.likedUsersId.contains(myId)).toList();
+      // print('upload_posts: $upload_posts');
+      liked_posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      _posts[1] = liked_posts; // 두 번째 탭의 포스팅 목록 업데이트
     });
   }
 
@@ -374,11 +381,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                     title: Row(
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                        '내 게시물',
-                                        textAlign:
-                                            TextAlign.center, // 텍스트를 가운데 정렬
-                                      ),
+                                      child: _selectedTab == 0
+                                          ? Text(
+                                              '내 게시물',
+                                              textAlign: TextAlign
+                                                  .center, // 텍스트를 가운데 정렬
+                                            )
+                                          : Text(
+                                              '좋아한 게시물',
+                                              textAlign: TextAlign
+                                                  .center, // 텍스트를 가운데 정렬
+                                            ),
                                     ),
                                     IconButton(
                                       onPressed: () {
