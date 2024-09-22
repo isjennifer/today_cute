@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:today_cute/models/post.dart';
 import 'package:today_cute/services/api_service.dart';
 
@@ -27,6 +28,17 @@ class InputField extends StatefulWidget {
 
 class _InputFieldState extends State<InputField> {
   String query = '';
+  String sort = ''; // TODO: 정렬 기준 선택 버튼 추가 필요
+
+  final TextEditingController _searchController =
+      TextEditingController(); // 검색어를 관리하는 컨트롤러 추가
+
+  // 검색 요청을 수행하는 메서드
+  Future<void> _performSearch(String query) async {
+    // 실제 검색 요청이나 로직을 구현하는 부분
+    print('검색어: $query');
+    await searchPostData(search: query);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +48,16 @@ class _InputFieldState extends State<InputField> {
       child: Column(
         children: <Widget>[
           TextField(
+            controller: _searchController, // TextField에 컨트롤러 추가 (검색어 입력 관리)
             onChanged: (text) {
               setState(() {
                 query = text;
               });
+            },
+            onSubmitted: (text) {
+              if (text.isNotEmpty) {
+                _performSearch(text); // 키보드의 제출 버튼을 눌렀을 때 검색 로직 호출
+              }
             },
             decoration: InputDecoration(
               hintText: '태그 또는 제목 검색',
@@ -79,17 +97,6 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
   late final List<AnimationController> _animationControllers;
   late final List<Animation<Offset>> _scrollAnimations;
   List<Post> posts = [];
-
-
-  final List<String> titles = [
-    '우리집 강아지 너무 귀엽지 않나요 세상사람들 여기와서 모두 보고 가세요',
-    '북극 펭귄 뒤뚱뒤뚱 걷는게 너무 귀여움ㅜㅜㅜㅜ',
-    '진짜 미쳤습니다 이거 안보면 손해ㅠㅠ',
-    '갓 태어난 아기 귀요미ㅠㅠㅠㅠㅠㅠㅠㅠ',
-    '강아지 고양이 모음집',
-  ];
-
-  final List<int> likes = [30990, 10000, 9999, 1478, 300]; // 좋아요 수
 
   @override
   void initState() {
@@ -221,6 +228,9 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // 현재 날짜 가져오기
+    String formattedDate = DateFormat('yyyy년 MM월 dd일').format(DateTime.now());
+
     return Container(
       width: double.infinity,
       height: 260,
@@ -253,7 +263,7 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
                           style: TextStyle(color: Colors.black, fontSize: 18),
                         ),
                         Text(
-                          '2024년 10월 20일 14:00 기준',
+                          '$formattedDate 기준',
                           style: TextStyle(color: Colors.grey),
                         ),
                       ],
