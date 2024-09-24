@@ -4,24 +4,76 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:today_cute/models/post.dart';
 import 'package:today_cute/services/api_service.dart';
+import 'package:today_cute/widgets/post_container.dart';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
+
+  @override
+  _SearchPageState createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  // Post 모델 리스트를 상태로 관리
+  List<Post> posts = [];
+  bool isSearching = false; // 검색 중 여부를 관리할 상태
+
+  // 검색 결과를 posts 상태로 저장하는 메서드
+  void _searchPosts(List<Post> results) {
+    setState(() {
+      posts = results;
+      isSearching = true; // 검색이 수행되었으므로 ChartBoard를 감춤
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: Color(0XFFFFFFFDE),
-        child: Column(
-          children: [
-            InputField(),
-            ChartBoard(),
-          ],
-        ));
+      color: const Color(0XFFFFFFFDE),
+      child: Column(
+        children: [
+          InputField(
+            onSearch: _searchPosts,
+          ),
+          isSearching
+              ? Expanded(
+                  child: PostList(posts: posts), // 검색 결과가 있을 때 리스트를 보여줌
+                )
+              : const ChartBoard(), // 검색 전에는 ChartBoard를 표시
+        ],
+      ),
+    );
+  }
+}
+
+// Post 모델 리스트를 보여주는 위젯 예시
+// TODO image_body 위젯으로 대체 되어야함
+class PostList extends StatelessWidget {
+  final List<Post> posts;
+
+  const PostList({super.key, required this.posts});
+  @override
+  Widget build(BuildContext context) {
+    return posts.isEmpty
+        ? Center(child: Text('검색결과가 없습니다.'))
+        : ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index];
+              return PostContainer(
+                post: post,
+                // onDelete: () => _deletePost(post.id), // 삭제 콜백 함수 전달
+              );
+            },
+          );
   }
 }
 
 class InputField extends StatefulWidget {
+  final Function(List<Post>) onSearch;
+
+  const InputField({super.key, required this.onSearch});
+
   @override
   _InputFieldState createState() => _InputFieldState();
 }
@@ -37,7 +89,8 @@ class _InputFieldState extends State<InputField> {
   Future<void> _performSearch(String query) async {
     // 실제 검색 요청이나 로직을 구현하는 부분
     print('검색어: $query');
-    await searchPostData(search: query);
+    List<Post> results = await searchPostData(search: query);
+    widget.onSearch(results);
   }
 
   @override
@@ -101,14 +154,16 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    fetchPopularPosts();
 
+    fetchPopularPosts();
+  }
+
+  void _initializeControllersAndAnimations() {
     // 리스트 초기화
     _scrollControllers = [];
     _animationControllers = [];
     _scrollAnimations = [];
 
-    // 컨트롤러 초기화
     for (int i = 0; i < posts.length; i++) {
       _scrollControllers.add(ScrollController());
       _animationControllers.add(AnimationController(
@@ -154,6 +209,8 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
       posts = postList;
       print('popularPostList:$postList');
       posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      _initializeControllersAndAnimations();
     });
   }
 
