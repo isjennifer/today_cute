@@ -208,7 +208,7 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
     setState(() {
       posts = postList;
       print('popularPostList:$postList');
-      posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      posts.sort((a, b) => b.likes.compareTo(a.likes));
 
       _initializeControllersAndAnimations();
     });
