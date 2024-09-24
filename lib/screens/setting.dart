@@ -11,10 +11,10 @@ class SettingPage extends StatelessWidget {
   void logout(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('accessToken');
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => AuthCheck()),
-    );
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => AuthCheck()),
+        (Route<dynamic> route) => false);
   }
 
   Future<void> _logoutDialog(BuildContext context) async {

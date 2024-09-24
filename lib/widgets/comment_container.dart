@@ -1,9 +1,10 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:today_cute/models/comment.dart';
+import '../utils/expandable_text.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:today_cute/utils/expandable_text.dart';
+import 'package:another_flushbar/flushbar.dart';
 
 class CommentContainer extends StatefulWidget {
   final Comment comment; // Comment 객체를 받을 수 있도록 수정
@@ -20,9 +21,9 @@ class CommentContainer extends StatefulWidget {
 }
 
 class _CommentContainerState extends State<CommentContainer> {
-  bool isExpanded = true;
   bool isEditing = false;
   late TextEditingController _commentController;
+  bool isUpdating = false; // 업데이트 로딩 상태 추가
 
   @override
   void initState() {
@@ -30,7 +31,25 @@ class _CommentContainerState extends State<CommentContainer> {
     _commentController = TextEditingController(text: widget.comment.content);
   }
 
+  @override
+  void didUpdateWidget(covariant CommentContainer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.comment.content != widget.comment.content) {
+      _commentController.text = widget.comment.content;
+    }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
   Future<void> _sendUpdateRequest(String commentId) async {
+    setState(() {
+      isUpdating = true;
+    });
+
     // SharedPreferences에서 accessToken 가져오기
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('accessToken');
@@ -40,6 +59,12 @@ class _CommentContainerState extends State<CommentContainer> {
     // 만약 accessToken이 없다면, 예외 처리
     if (accessToken == null) {
       print('Access token이 없습니다.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('인증 정보가 없습니다.')),
+      );
+      setState(() {
+        isUpdating = false;
+      });
       return;
     } else {
       print('Access token: $accessToken'); // 이 부분이 제대로 출력되는지 확인
@@ -60,13 +85,49 @@ class _CommentContainerState extends State<CommentContainer> {
           body: body);
       if (response.statusCode == 200) {
         print('PUT 요청 성공: ${response.body}');
-        _commentController.clear(); // 댓글 전송 후 입력란 초기화
+        // 댓글 수정 성공 시, 편집 모드 종료 및 부모에게 알림
+        setState(() {
+          isEditing = false;
+        });
         widget.onCommentUpdated(); // 댓글 수정 후 부모에게 알림
+        Flushbar(
+          message: '댓글이 성공적으로 수정되었습니다.',
+          duration: Duration(seconds: 3),
+          backgroundColor: Colors.black,
+        )..show(context);
+      } else if (response.statusCode == 400) {
+        print('PUT 요청 실패: ${response.statusCode}');
+        Flushbar(
+          message: '사용 가능한 깃털이 없습니다. 수정이 취소됩니다.',
+          duration: Duration(seconds: 3),
+          backgroundColor: Colors.black,
+        )..show(context);
+        setState(() {
+          isEditing = false;
+        });
+        // 추가적인 에러 처리 (예: 깃털이 0개일 경우 에러 메시지 출력)
       } else {
         print('PUT 요청 실패: ${response.statusCode}');
+        Flushbar(
+          message: '댓글 수정에 실패했습니다.',
+          duration: Duration(seconds: 3),
+          backgroundColor: Colors.black,
+        )..show(context);
+        setState(() {
+          isEditing = false;
+        });
       }
     } catch (e) {
       print('댓글 수정 요청 중 오류 발생: $e');
+      Flushbar(
+        message: '오류가 발생했습니다. 다시 시도해주세요.',
+        duration: Duration(seconds: 3),
+        backgroundColor: Colors.black,
+      )..show(context);
+    } finally {
+      setState(() {
+        isUpdating = false;
+      });
     }
   }
 
@@ -105,7 +166,10 @@ class _CommentContainerState extends State<CommentContainer> {
                     children: [
                       ElevatedButton(
                         onPressed: () async {
-                          await _sendUpdateRequest(widget.comment.id);
+                          setState(() {
+                            isEditing = !isEditing; // 수정 모드 토글
+                          });
+
                           Navigator.of(context).pop(); // 모달 창 닫기
                         },
                         child: Text('예'),
@@ -141,7 +205,7 @@ class _CommentContainerState extends State<CommentContainer> {
           // 프로필 이미지를 원형으로 만듭니다.
           ClipOval(
             child: Image.asset(
-              'assets/cat.png', // TODO:댓글 사용자로 이미지 받아오기
+              'assets/cat.png', // TODO: 댓글 사용자로 이미지 받아오기
               width: 50,
               height: 50,
               fit: BoxFit.cover,
@@ -159,36 +223,16 @@ class _CommentContainerState extends State<CommentContainer> {
                     children: [
                       Text(
                         widget.comment.nickName,
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       Row(
                         children: [
                           TextButton(
                             onPressed: () {
-                              setState(() {
-                                isEditing = !isEditing; // 수정 모드 토글
-                              });
+                              _commentUpdateDialog(context);
                             },
-                            child: Text(isEditing ? '취소' : '수정'),
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero, // 패딩 제거
-                              minimumSize: Size(0, 0), // 최소 크기 제거
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
-                              alignment: Alignment.center, // 텍스트 정렬
-                            ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 6.0),
-                            height: 12.0,
-                            width: 1.0,
-                            color: Colors.grey, // 가로선 색상
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // 수정 버튼 클릭 시 동작할 코드
-                            },
-                            child: Text('삭제'),
+                            child: Text(isEditing ? '' : '수정'),
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero, // 패딩 제거
                               minimumSize: Size(0, 0), // 최소 크기 제거
@@ -202,34 +246,57 @@ class _CommentContainerState extends State<CommentContainer> {
                     ],
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: isEditing ? 0 : 10),
                 isEditing
-                    ? Column(
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          TextField(
-                            controller: _commentController,
-                            maxLines: null,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10.0)),
+                          Expanded(
+                            child: Container(
+                              height: 22, // TextField 높이 조정
+                              child: TextField(
+                                controller: _commentController,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontSize: 14, // 원하는 폰트 크기로 조정
+                                ),
+                                decoration: InputDecoration(
+                                  contentPadding:
+                                      EdgeInsets.only(left: 2, bottom: 17),
+                                  border: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Colors.grey, // 언더라인 색상 설정
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                          SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () async {
-                              await _sendUpdateRequest(widget.comment.id);
-                            },
-                            child: Text('수정 완료'),
-                          ),
+                          SizedBox(width: 10),
+                          isUpdating
+                              ? SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : ElevatedButton(
+                                  onPressed: () async {
+                                    await _sendUpdateRequest(widget.comment.id);
+                                  },
+                                  child: Icon(
+                                    Icons.send,
+                                    size: 16,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    shape: CircleBorder(), // 버튼을 원형으로 만듦
+                                    minimumSize: Size(28, 28),
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                ),
                         ],
                       )
                     : ExpandableText(text: widget.comment.content),
-                // Container(
-                //     child: ExpandableText(
-                //   text: widget.comment.content,
-                // )),
               ],
             ),
           ),

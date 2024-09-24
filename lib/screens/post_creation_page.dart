@@ -174,10 +174,10 @@ class _PostCreationPageState extends State<PostCreationPage> {
         SnackBar(content: Text('깃털을 한개 얻었습니다.')),
       );
       // 업로드 성공 후 피드 페이지로 이동 (수정 필요)
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => AuthCheck()),
-      );
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => AuthCheck()),
+          (Route<dynamic> route) => false);
     } else {
       // 업로드 실패 처리
       print('Fail Response: $responseString');

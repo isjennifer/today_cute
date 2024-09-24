@@ -20,6 +20,7 @@ class CommentDrawer extends StatefulWidget {
 class _CommentDrawerState extends State<CommentDrawer> {
   final TextEditingController _commentController = TextEditingController();
   List<Comment> comments = [];
+  bool isLoading = false; // 로딩 상태 추가
 
   @override
   void initState() {
@@ -28,12 +29,26 @@ class _CommentDrawerState extends State<CommentDrawer> {
   }
 
   Future<void> fetchComments() async {
-    final commentList = await fetchCommentData(widget.postId); // 댓글 가져오기 호출
     setState(() {
-      comments = commentList;
-      print('postList:$commentList');
-      comments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      isLoading = true;
     });
+    try {
+      final commentList = await fetchCommentData(widget.postId); // 댓글 가져오기 호출
+      setState(() {
+        comments = commentList;
+        print('postList:$commentList');
+        comments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      });
+    } catch (e) {
+      print('댓글 가져오기 오류: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('댓글을 가져오는 중 오류가 발생했습니다.')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -43,15 +58,25 @@ class _CommentDrawerState extends State<CommentDrawer> {
   }
 
   Future<void> _sendPostRequest() async {
+    final commentText = _commentController.text.trim();
+    if (commentText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('댓글 내용을 입력해주세요.')),
+      );
+      return;
+    }
+
     // SharedPreferences에서 accessToken 가져오기
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('accessToken');
-    final commentText = _commentController.text.trim();
 
     print("댓글 생성 요청 시작 내용:$commentText");
     // 만약 accessToken이 없다면, 예외 처리
     if (accessToken == null) {
       print('Access token이 없습니다.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인이 필요합니다.')),
+      );
       return;
     } else {
       print('Access token: $accessToken'); // 이 부분이 제대로 출력되는지 확인
@@ -74,11 +99,20 @@ class _CommentDrawerState extends State<CommentDrawer> {
         print('POST 요청 성공: ${response.body}');
         _commentController.clear(); // 댓글 전송 후 입력란 초기화
         await fetchComments();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('댓글이 성공적으로 작성되었습니다.')),
+        );
       } else {
         print('POST 요청 실패: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('댓글 작성에 실패했습니다.')),
+        );
       }
     } catch (e) {
       print('댓글 POST 요청 중 오류 발생: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('오류가 발생했습니다. 다시 시도해주세요.')),
+      );
     }
   }
 
@@ -101,24 +135,30 @@ class _CommentDrawerState extends State<CommentDrawer> {
         mainAxisSize: MainAxisSize.min, // 내용에 맞게 서랍의 높이를 조절
         children: [
           Expanded(
-            child: comments.isEmpty
-                ? Center(
-                    child: Text(
-                      '아직 댓글이 없습니다.', // 댓글이 없을 때 표시할 메시지
-                      style: TextStyle(fontSize: 16.0, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: comments.length, // comments 리스트의 길이만큼 아이템 생성
-                    itemBuilder: (context, index) {
-                      final comment =
-                          comments[index]; // 각 index에 해당하는 comment 가져오기
-                      return CommentContainer(
-                          comment: comment,
-                          onCommentUpdated:
-                              _onCommentUpdated); // CommentContainer에 comment 전달
-                    },
-                  ),
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : comments.isEmpty
+                    ? Center(
+                        child: Text(
+                          '아직 댓글이 없습니다.', // 댓글이 없을 때 표시할 메시지
+                          style: TextStyle(fontSize: 16.0, color: Colors.grey),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: fetchComments,
+                        child: ListView.builder(
+                          itemCount:
+                              comments.length, // comments 리스트의 길이만큼 아이템 생성
+                          itemBuilder: (context, index) {
+                            final comment =
+                                comments[index]; // 각 index에 해당하는 comment 가져오기
+                            return CommentContainer(
+                                comment: comment,
+                                onCommentUpdated:
+                                    _onCommentUpdated); // CommentContainer에 comment 전달
+                          },
+                        ),
+                      ),
           ),
           SizedBox(height: 16.0),
           Divider(),
@@ -141,7 +181,6 @@ class _CommentDrawerState extends State<CommentDrawer> {
               ElevatedButton(
                 onPressed: () async {
                   await _sendPostRequest();
-                  // Navigator.of(context).pop();
                 },
                 child: Icon(Icons.send),
                 style: ElevatedButton.styleFrom(

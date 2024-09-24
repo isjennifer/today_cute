@@ -279,75 +279,106 @@ class _HomePageState extends State<PageFrame> {
           width: 150,
         ),
         actions: [
-          PopupMenuButton<int>(
-            icon: Image.asset(
-              'assets/feather.png',
-              width: 40,
-            ),
-            color: Colors.transparent,
-            shadowColor: Colors.transparent,
-            position: PopupMenuPosition.under,
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 1,
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 2,
-                        offset: Offset(3, 3),
-                      ),
-                    ],
+          Builder(builder: (BuildContext context) {
+            return IconButton(
+              icon: Image.asset(
+                'assets/feather.png',
+                width: 40,
+              ),
+              onPressed: () async {
+                await fetchMyInfo(); // 최신 feather 개수 가져오기
+
+                // 버튼의 위치를 찾아 팝업 메뉴의 위치 계산
+                final RenderBox button =
+                    context.findRenderObject() as RenderBox;
+                final RenderBox overlay = Overlay.of(context)!
+                    .context
+                    .findRenderObject() as RenderBox;
+                final Offset buttonPosition =
+                    button.localToGlobal(Offset.zero, ancestor: overlay);
+                final RelativeRect position = RelativeRect.fromRect(
+                  Rect.fromPoints(
+                    buttonPosition,
+                    buttonPosition.translate(
+                        button.size.width, button.size.height),
                   ),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            _howToUseFeatherModal(context);
-                          },
-                          style: ButtonStyle(
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                  Colors.transparent)),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/feather.png',
-                                width: 50,
-                              ),
-                              Text(
-                                feather,
-                                style: TextStyle(fontSize: 20),
-                              ),
-                              SizedBox(width: 10),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton.icon(
-                                onPressed: () {},
-                                icon: Icon(Icons.check),
-                                label: Text('출석체크')),
-                            ElevatedButton.icon(
-                                onPressed: () {},
-                                icon: Icon(Icons.video_camera_back),
-                                label: Text('광고시청')),
+                  Offset.zero & overlay.size,
+                );
+
+                // 팝업 메뉴 표시
+                showMenu<int>(
+                  context: context,
+                  position: position,
+                  color: Colors.transparent, // 배경 투명하게 설정
+                  shadowColor: Colors.transparent, // 그림자 제거
+                  items: [
+                    PopupMenuItem<int>(
+                      value: 1,
+                      child: Container(
+                        width: 200,
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 2,
+                              offset: Offset(3, 3),
+                            ),
                           ],
                         ),
-                      ]),
-                ),
-              ),
-            ],
-          ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                _howToUseFeatherModal(context);
+                              },
+                              style: ButtonStyle(
+                                overlayColor: MaterialStateProperty.all<Color>(
+                                    Colors.transparent),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    'assets/feather.png',
+                                    width: 50,
+                                  ),
+                                  Text(
+                                    feather,
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                  SizedBox(width: 10),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                // 출석체크 액션 처리
+                              },
+                              icon: Icon(Icons.check),
+                              label: Text('출석체크'),
+                            ),
+                            SizedBox(height: 5),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                // 광고시청 액션 처리
+                              },
+                              icon: Icon(Icons.video_camera_back),
+                              label: Text('광고시청'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          })
         ],
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
