@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:today_cute/models/post.dart';
+import 'package:today_cute/screens/post_detail_page.dart';
 import 'package:today_cute/services/api_service.dart';
 import 'package:today_cute/widgets/post_container.dart';
 
@@ -237,50 +238,61 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
 
   Widget _buildScrollingRow(int index) {
     final post = posts[index]; // 수정: 게시글 데이터 사용
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text(
-            '${index + 1}',
-            style: TextStyle(color: Colors.black, fontSize: 18),
-          ),
-          SizedBox(
-            width: 200,
-            child: SingleChildScrollView(
-              controller: _scrollControllers[index],
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  Text(
-                    post.title,
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ],
+    return InkWell(
+        onTap: () {
+          // 페이지 이동
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  PostDetailPage(post: post), // 예시로 PostDetailPage로 이동
+            ),
+          );
+        },
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                '${index + 1}',
+                style: TextStyle(color: Colors.black, fontSize: 18),
               ),
-            ),
+              SizedBox(
+                width: 200,
+                child: SingleChildScrollView(
+                  controller: _scrollControllers[index],
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      Text(
+                        post.title,
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 70,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Icon(
+                      Icons.favorite,
+                      size: 15,
+                      color: Colors.pink,
+                    ),
+                    Text(
+                      _formatLikes(post.likes),
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
-          SizedBox(
-            width: 70,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Icon(
-                  Icons.favorite,
-                  size: 15,
-                  color: Colors.pink,
-                ),
-                Text(
-                  _formatLikes(post.likes),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
+        ));
   }
 
   @override
