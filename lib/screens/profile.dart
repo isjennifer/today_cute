@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:math';
 import '../models/post.dart';
 import '../services/api_service.dart';
 import '../widgets/post_container.dart';
@@ -14,6 +13,12 @@ import '../widgets/post_container.dart';
 import '../utils/token_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'post_edit_page.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:path/path.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -39,6 +44,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String myId = '';
   String nick_name = '';
   String email = '';
+  String? profile_image_url = '';
 
   @override
   void initState() {
@@ -76,13 +82,16 @@ class _ProfilePageState extends State<ProfilePage> {
       if (decodedInfo.isNotEmpty) {
         nick_name = decodedInfo['nick_name'];
         email = decodedInfo['email'];
+        profile_image_url = decodedInfo['profile_image_url'];
       } else {
         nick_name = '이름 없음';
         email = '이메일 없음';
+        profile_image_url = null;
       }
 
       print('내 닉네임: $nick_name');
       print('내 이메일: $email');
+      print('내 프사: $profile_image_url');
     });
   }
 
@@ -129,6 +138,133 @@ class _ProfilePageState extends State<ProfilePage> {
   //     }
   //   });
   // }
+
+  File? _profileImage;
+  bool _isUploading = false; // 업로드 상태 관리
+
+  final ImagePicker _picker = ImagePicker();
+
+  // 이미지 선택 함수
+  Future<void> _pickImage(BuildContext context) async {
+    try {
+      // 갤러리에서 이미지 선택
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        // 이미지 크롭 (원형으로)
+        File? croppedFile = await _cropImage(pickedFile.path);
+        if (croppedFile != null) {
+          setState(() {
+            _profileImage = croppedFile;
+          });
+
+          // 이미지 업로드
+          await _uploadImage(croppedFile, context);
+        }
+      }
+    } catch (e) {
+      print("이미지 선택 오류: $e");
+      // 에러 처리 (예: 사용자에게 알림)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이미지 선택 중 오류가 발생했습니다.')),
+      );
+    }
+  }
+
+  // 이미지 크롭 함수
+  Future<File?> _cropImage(String filePath) async {
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: filePath,
+      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: '이미지 크롭',
+          toolbarColor: Colors.blue,
+          toolbarWidgetColor: Colors.white,
+          hideBottomControls: true,
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(
+          title: '이미지 크롭',
+          aspectRatioLockEnabled: true,
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      return File(croppedFile.path);
+    }
+    return null;
+  }
+
+  // 이미지 업로드 함수
+  Future<void> _uploadImage(File imageFile, BuildContext context) async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    // 서버 업로드 함수 호출
+    await uploadProfileImage(imageFile, context);
+
+    setState(() {
+      _isUploading = false;
+    });
+
+    await fetchMyInfo();
+  }
+
+  // 서버에 이미지 업로드 함수
+  Future<void> uploadProfileImage(File imageFile, BuildContext context) async {
+    // 서버 엔드포인트 URL (실제 URL로 변경 필요)
+    final String uploadUrl =
+        'http://52.231.106.232:8000/api/user/profile_image';
+
+    try {
+      // HTTP 요청을 위한 MultipartRequest 생성
+      var request = http.MultipartRequest('PUT', Uri.parse(uploadUrl));
+
+      // SharedPreferences에서 accessToken 가져오기
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+      request.headers['Authorization'] = 'Bearer $accessToken';
+
+      // 파일을 MultipartFile로 변환
+      final mimeTypeData = lookupMimeType(imageFile.path);
+      if (mimeTypeData != null) {
+        final mimeType = mimeTypeData.split('/');
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'file', // 서버에서 기대하는 필드명
+            imageFile.path,
+            filename: basename(imageFile.path),
+            contentType: MediaType(mimeType[0], mimeType[1]), // MIME 타입 설정
+          ),
+        );
+      }
+      print(imageFile.path);
+      // 요청 전송
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        print('이미지 업로드 성공');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('프로필 이미지가 성공적으로 업로드되었습니다.')),
+        );
+      } else {
+        print('이미지 업로드 실패: ${response.statusCode}');
+        print('이미지 업로드 실패: ${response.reasonPhrase}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('프로필 이미지 업로드에 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      print('이미지 업로드 중 오류 발생: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이미지 업로드 중 오류가 발생했습니다.')),
+      );
+    }
+  }
 
   Future<void> _deletePostDialog(BuildContext context, String postId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -251,13 +387,35 @@ class _ProfilePageState extends State<ProfilePage> {
                       maxWidth: double.infinity,
                       child: Column(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(100),
-                            child: Image.asset(
-                              'assets/dog.jpg',
+                          GestureDetector(
+                            onTap: () => _pickImage(context),
+                            child: Container(
                               width: 180,
                               height: 180,
-                              fit: BoxFit.cover,
+                              decoration: BoxDecoration(
+                                color: Colors.white, // 테두리 배경 색상
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(
+                                  color: Colors.grey, // 원하는 테두리 색상
+                                  width: 1, // 테두리 두께
+                                ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: profile_image_url == null
+                                    ? Image.asset(
+                                        'assets/profile.png',
+                                        width: 180,
+                                        height: 180,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.network(
+                                        'http://52.231.106.232:8000/$profile_image_url',
+                                        width: 180,
+                                        height: 180,
+                                        fit: BoxFit.cover,
+                                      ),
+                              ),
                             ),
                           ),
                           SizedBox(height: 30),
