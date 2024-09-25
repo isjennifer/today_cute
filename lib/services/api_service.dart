@@ -212,3 +212,32 @@ Future<void> likePost(
         .showSnackBar(SnackBar(content: Text('Error: $e')));
   }
 }
+
+Future<void> createFCMTokenData(
+    BuildContext context, String accessToken, String fcmToken) async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://52.231.106.232:8000/api/auth/fcmtoken'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(<String, String>{
+        'fcm_token': fcmToken, // FCM 토큰을 JSON으로 보냄
+      }),
+    );
+    if (response.statusCode == 200) {
+      // FCM 토큰 생성 성공 처리
+      print('FCM 토큰 생성 성공');
+    } else {
+      // 오류 처리
+      print('FCM 토큰 생성 실패 ${response.body}');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('FCM 토큰 생성 실패')));
+    }
+  } catch (e) {
+    print('Error: $e');
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Error: $e')));
+  }
+}

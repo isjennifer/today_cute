@@ -26,7 +26,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // FCM 토큰 초기화 및 서버에 전송
-  await _initializeFCM();
+  //await _initializeFCM();
 
   // 백그라운드 알림 처리 설정
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -37,31 +37,6 @@ void main() async {
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
-}
-
-Future<void> _initializeFCM() async {
-  try {
-    String? fcmToken = await FirebaseMessaging.instance.getToken();
-    if (fcmToken != null) {
-      await _sendTokenToServer(fcmToken);
-    }
-    print(fcmToken);
-  } catch (exp) {
-    print("FcmToken을 서버에 전송하던 중 예외 발생 $exp");
-  }
-
-  // 토큰이 갱신될 때 서버에 새 토큰 전송
-  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-    if (newToken != null) {
-      await _sendTokenToServer(newToken);
-    }
-  });
-}
-
-Future<void> _sendTokenToServer(String token) async {
-  // TODO: 여기서 토큰을 서버에 전송하는 코드를 작성해야 합니다.
-  // 예를 들어, HTTP POST 요청으로 서버에 토큰을 전달합니다.
-  print("토큰을 서버에 전송 중: $token");
 }
 
 // MyApp 시작 부분

@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -5,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'; // UserApi를 위한 임포트 추가
 import 'package:flutter/services.dart';
+import 'package:today_cute/services/api_service.dart';
 import 'package:today_cute/widgets/comment_drawer.dart';
 import '../main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -80,6 +82,8 @@ class LoginPage extends StatelessWidget {
         // 서버에서 받은 액세스토큰을 저장
         await prefs.setString('accessToken', responseBody['access_token']);
 
+        await _setFCMToken(context);
+
         // 로그인 성공 후 메인 페이지로 이동
         Navigator.pushReplacement(
           context,
@@ -102,6 +106,29 @@ class LoginPage extends StatelessWidget {
     } catch (error) {
       print('서버로그인 요청 실패 $error');
     }
+  }
+
+  Future<void> _setFCMToken(BuildContext context) async {
+    // 엑세스 토큰을 가져옵니다.
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? accessToken = prefs.getString('accessToken');
+
+    try {
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null && accessToken != null) {
+        await createFCMTokenData(context, accessToken, fcmToken);
+      }
+      print(fcmToken);
+    } catch (exp) {
+      print("FcmToken을 서버에 전송하던 중 예외 발생 $exp");
+    }
+
+    // 토큰이 갱신될 때 서버에 새 토큰 전송
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      if (accessToken != null) {
+        await createFCMTokenData(context, accessToken, newToken);
+      }
+    });
   }
 
   @override
