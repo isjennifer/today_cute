@@ -11,8 +11,8 @@ import 'dart:convert';
 import '../models/post.dart';
 import '../services/api_service.dart';
 import '../widgets/post_container.dart';
-import '../widgets/post_container.dart';
 import '../utils/token_utils.dart';
+import 'post_detail_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'post_edit_page.dart';
 import 'dart:io';
@@ -640,86 +640,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
-                              return Scaffold(
-                                appBar: AppBar(
-                                    title: Row(
-                                  children: [
-                                    Expanded(
-                                      child: _selectedTab == 0
-                                          ? Text(
-                                              '내 게시물',
-                                              textAlign: TextAlign
-                                                  .center, // 텍스트를 가운데 정렬
-                                            )
-                                          : Text(
-                                              '좋아한 게시물',
-                                              textAlign: TextAlign
-                                                  .center, // 텍스트를 가운데 정렬
-                                            ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return Container(
-                                              padding: EdgeInsets.all(16),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  ListTile(
-                                                    leading: Icon(Icons.edit),
-                                                    title: Text('수정'),
-                                                    onTap: () async {
-                                                      // 수정 기능 구현
-                                                      await Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                PostEditPage(
-                                                                    post:
-                                                                        post), // 수정할 post 전달
-                                                          ));
-                                                      Navigator.of(context)
-                                                          .pop(); // 팝업 닫기
-                                                      await fetchPosts();
-                                                      Navigator.of(context)
-                                                          .pop(); // 삭제 후 이전 화면으로 돌아가기
-                                                    },
-                                                  ),
-                                                  ListTile(
-                                                    leading: Icon(Icons.delete),
-                                                    title: Text('삭제'),
-                                                    onTap: () async {
-                                                      // 삭제 기능 구현
-                                                      await _deletePostDialog(
-                                                          context, post.id);
-                                                      Navigator.of(context)
-                                                          .pop(); // 팝업 닫기
-
-                                                      Navigator.of(context)
-                                                          .pop(); // 삭제 후 이전 화면으로 돌아가기
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                      icon: Icon(Icons.more_vert),
-                                    ),
-                                  ],
-                                )),
-                                body: SingleChildScrollView(
-                                  child: Container(
-                                    color: Color(0XFFFFFFFDE),
-                                    child: PostContainer(
-                                      post: post,
-                                      // onDelete: () {} // 삭제 콜백 함수 없음
-                                    ),
-                                  ),
-                                ),
+                              return PostDetailPage(
+                                post: post,
+                                myId: myId,
                               );
                             }),
                           );

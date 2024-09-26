@@ -6,6 +6,7 @@ import 'package:today_cute/models/post.dart';
 import 'package:today_cute/screens/post_detail_page.dart';
 import 'package:today_cute/services/api_service.dart';
 import 'package:today_cute/widgets/post_container.dart';
+import '../utils/token_utils.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -155,8 +156,18 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _initializePreferences();
 
     fetchPopularPosts();
+  }
+
+  String myId = '';
+  Future<void> _initializePreferences() async {
+    myId = await getUserIdFromToken();
+    setState(() {
+      // 토큰의 정보 출력
+      print('profile.dart-Decoded Token: $myId');
+    });
   }
 
   void _initializeControllersAndAnimations() {
@@ -244,8 +255,10 @@ class _ChartBoardState extends State<ChartBoard> with TickerProviderStateMixin {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  PostDetailPage(post: post), // 예시로 PostDetailPage로 이동
+              builder: (context) => PostDetailPage(
+                post: post,
+                myId: myId,
+              ), // 예시로 PostDetailPage로 이동
             ),
           );
         },

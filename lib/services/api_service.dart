@@ -13,13 +13,12 @@ Future<List<Post>> fetchPostData() async {
         'Content-Type': 'application/json; charset=UTF-8',
       },
     );
-
     final List<dynamic> decodedResponse =
         jsonDecode(utf8.decode(response.bodyBytes));
-
     // 'posts' 키가 존재하고 null이 아닐 경우 처리
     final List<dynamic> posts = decodedResponse ?? []; // null인 경우 빈 리스트로 대체
     print('api_service.dart-posts:$posts');
+
     return posts.map((json) => Post.fromJson(json)).toList();
   } catch (e) {
     print('fetchPostData-Error: $e');
