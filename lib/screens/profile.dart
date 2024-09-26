@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http_parser/http_parser.dart';
 import 'setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -17,8 +19,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:path/path.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
+import 'dart:typed_data';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -207,11 +209,15 @@ class _ProfilePageState extends State<ProfilePage> {
     // 서버 업로드 함수 호출
     await uploadProfileImage(imageFile, context);
 
-    setState(() {
-      _isUploading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isUploading = false;
+      });
+    }
 
-    await fetchMyInfo();
+    if (mounted) {
+      await fetchMyInfo();
+    }
   }
 
   // 서버에 이미지 업로드 함수
@@ -243,6 +249,82 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }
       print(imageFile.path);
+      // 요청 전송
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        print('이미지 업로드 성공');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('프로필 이미지가 성공적으로 업로드되었습니다.')),
+        );
+      } else {
+        print('이미지 업로드 실패: ${response.statusCode}');
+        print('이미지 업로드 실패: ${response.reasonPhrase}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('프로필 이미지 업로드에 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      print('이미지 업로드 중 오류 발생: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이미지 업로드 중 오류가 발생했습니다.')),
+      );
+    }
+  }
+
+  // 기본 이미지로 설정 함수
+  Future<void> _resetImage(BuildContext context) async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    // 서버 업로드 함수 호출
+    await resetProfileImage(context);
+
+    if (mounted) {
+      setState(() {
+        _isUploading = false;
+      });
+    }
+
+    if (mounted) {
+      await fetchMyInfo();
+    }
+  }
+
+  // 서버에 이미지 업로드 함수
+  Future<void> resetProfileImage(BuildContext context) async {
+    // 서버 엔드포인트 URL
+    final String uploadUrl =
+        'http://52.231.106.232:8000/api/user/profile_image';
+
+    try {
+      // HTTP 요청을 위한 MultipartRequest 생성
+      var request = http.MultipartRequest('PUT', Uri.parse(uploadUrl));
+
+      // SharedPreferences에서 accessToken 가져오기
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? accessToken = prefs.getString('accessToken');
+      request.headers['Authorization'] = 'Bearer $accessToken';
+
+      // Asset에서 이미지 파일 읽기
+      ByteData byteData =
+          await rootBundle.load('assets/profile.png'); // 실제 Asset 경로
+      List<int> imageData = byteData.buffer.asUint8List();
+
+      // MIME 타입 추출
+      final mimeTypeData = lookupMimeType('assets/profile.png') ?? 'image/png';
+
+      // 바이트 데이터를 MultipartFile로 변환 (contentType 생략)
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'file', // 서버에서 기대하는 필드명
+          imageData,
+          filename: basename('assets/profile.png'), // 파일 이름 설정
+          contentType: null, // contentType 생략
+        ),
+      );
+
       // 요청 전송
       var response = await request.send();
 
@@ -388,7 +470,38 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap: () => _pickImage(context),
+                            onTap: () {
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Container(
+                                      padding: EdgeInsets.all(16),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            leading: Icon(Icons.edit),
+                                            title: Text('프로필 사진 수정'),
+                                            onTap: () async {
+                                              await _pickImage(context);
+                                              Navigator.of(context)
+                                                  .pop(); // 팝업 닫기
+                                            },
+                                          ),
+                                          ListTile(
+                                            leading: Icon(Icons.delete),
+                                            title: Text('기본 이미지로 설정'),
+                                            onTap: () async {
+                                              await _resetImage(context);
+                                              Navigator.of(context)
+                                                  .pop(); // 팝업 닫기
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  });
+                            },
                             child: Container(
                               width: 180,
                               height: 180,
@@ -402,19 +515,12 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
-                                child: profile_image_url == null
-                                    ? Image.asset(
-                                        'assets/profile.png',
-                                        width: 180,
-                                        height: 180,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Image.network(
-                                        'http://52.231.106.232:8000/$profile_image_url',
-                                        width: 180,
-                                        height: 180,
-                                        fit: BoxFit.cover,
-                                      ),
+                                child: Image.network(
+                                  'http://52.231.106.232:8000$profile_image_url',
+                                  width: 180,
+                                  height: 180,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),
