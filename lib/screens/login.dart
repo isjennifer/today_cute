@@ -118,7 +118,7 @@ class LoginPage extends StatelessWidget {
       if (fcmToken != null && accessToken != null) {
         await createFCMTokenData(context, accessToken, fcmToken);
       }
-      print(fcmToken);
+      print("fcmToken생성: $fcmToken");
     } catch (exp) {
       print("FcmToken을 서버에 전송하던 중 예외 발생 $exp");
     }
