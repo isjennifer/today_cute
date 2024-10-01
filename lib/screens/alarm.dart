@@ -19,28 +19,6 @@ class _AlarmPageState extends State<AlarmPage> {
   @override
   void initState() {
     super.initState();
-
-    // 주기적으로 알림을 추가하는 타이머 설정
-    // Timer.periodic(Duration(seconds: 5), (timer) {
-    //   // 서버에서 알림이 도착한 것처럼 새로운 알람 추가
-    //   setState(() {
-    //     _alarms.add(AlarmBoard());
-    //   });
-    // });
-
-    // 포그라운드 알림 처리
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Message data: ${message.data}'); //TODO: 알람보드를 받아온 알람 정보로 만들어주기
-
-      setState(() {
-        widget.onNewNotification(); // 새로운 알림이 도착함
-        _alarms.add(AlarmBoard());
-      });
-
-      if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
-      }
-    });
   }
 
   void _clearAllNotifications() {

@@ -23,7 +23,7 @@ void main() async {
   KakaoSdk.init(
     nativeAppKey: 'fa34c75614ac318d63f7b6cd77ec9dfb',
   );
-  print('!!!!!!!!!!!!!!$apiUrl');
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // FCM 토큰 초기화 및 서버에 전송
@@ -153,6 +153,20 @@ class _HomePageState extends State<PageFrame> {
     super.initState();
 
     _initializePreferences();
+
+    // 포그라운드 알림 처리
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Foreground message received: ${message.notification?.title}');
+
+      // 알림 상태 업데이트
+      setState(() {
+        _hasNewNotification = true; // 알림 도착 표시
+      });
+
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+    });
   }
 
   String myId = '';
@@ -326,8 +340,17 @@ class _HomePageState extends State<PageFrame> {
                             ),
                             SizedBox(height: 10),
                             ElevatedButton.icon(
-                              onPressed: () {
+                              onPressed: () async {
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                final token =
+                                    prefs.getString('accessToken') ?? '';
+                                    print('토큰토큰$token');
                                 // 출석체크 액션 처리
+                                if (context.mounted) {
+                                  await checkIn(context, token);
+                                  await fetchMyInfo();
+                                }
                               },
                               icon: Icon(Icons.check),
                               label: Text('출석체크'),

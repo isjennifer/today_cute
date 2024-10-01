@@ -69,20 +69,26 @@ Future<void> deletePostData(
       },
     );
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('게시물이 삭제되었습니다.')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('게시물이 삭제되었습니다.')),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('게시물 삭제 실패')));
-      print('게시물 삭제 실패 ${response.body}');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('게시물 삭제 실패')));
+        print('게시물 삭제 실패 ${response.body}');
+      }
     }
   } catch (e) {
     print('Error: $e');
-    // Show Snackbar with error message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error: $e')),
-    );
+    if (context.mounted) {
+      // Show Snackbar with error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 }
 
@@ -102,16 +108,20 @@ Future<void> PutPostData(
         SnackBar(content: Text('게시물이 수정되었습니다.')),
       );
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('게시물 수정 실패')));
-      print('게시물 수정 실패 ${response.body}');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('게시물 수정 실패')));
+        print('게시물 수정 실패 ${response.body}');
+      }
     }
   } catch (e) {
     print('Error: $e');
-    // Show Snackbar with error message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error: $e')),
-    );
+    if (context.mounted) {
+      // Show Snackbar with error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 }
 
@@ -203,13 +213,17 @@ Future<void> likePost(
     } else {
       // 오류 처리
       print('좋아요 실패 ${response.body}');
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('좋아요 실패')));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('좋아요 실패')));
+      }
     }
   } catch (e) {
     print('Error: $e');
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Error: $e')));
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
   }
 }
 
@@ -232,12 +246,46 @@ Future<void> createFCMTokenData(
     } else {
       // 오류 처리
       print('FCM 토큰 생성 실패 ${response.body}');
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('FCM 토큰 생성 실패')));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('FCM 토큰 생성 실패')));
+      }
     }
   } catch (e) {
     print('Error: $e');
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Error: $e')));
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+}
+
+Future<void> checkIn(BuildContext context, String? token) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$apiUrl/api/user/attendance'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      // 출석 체크 성공 처리
+      print('출석 체크 성공');
+    } else {
+      // 오류 처리
+      print('출석 체크 실패 ${response.body}');
+      if (context.mounted) {
+        // UI 업데이트 로직
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('출석 체크 실패')));
+      }
+    }
+  } catch (e) {
+    print('Error: $e');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
   }
 }
