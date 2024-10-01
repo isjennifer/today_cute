@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:today_cute/services/api_service.dart';
 
-Future<void> showDeletePostDialog(
-    BuildContext context, String postId) async {
+Future<void> showDeletePostDialog(BuildContext context, String postId) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? accessToken = prefs.getString('accessToken');
 
@@ -38,14 +37,18 @@ Future<void> showDeletePostDialog(
                     ElevatedButton(
                       onPressed: () async {
                         Navigator.of(context).pop(); // 다이얼로그 닫기
-                        await deletePostData(context, postId, accessToken); // 게시물 삭제
+                        await deletePostData(
+                            context, postId, accessToken); // 게시물 삭제
+                        Navigator.of(context).pop(); // 서랍 닫기
+                        Navigator.of(context).pop(); // 프로필페이지로 이동
                       },
                       child: Text('삭제'),
                     ),
                     SizedBox(width: 20),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pop(); // 모달 창 닫기
+                        Navigator.of(context).pop(); // 다이얼로그 닫기
+                        Navigator.of(context).pop(); // 서랍 닫기
                       },
                       child: Text('취소'),
                     ),

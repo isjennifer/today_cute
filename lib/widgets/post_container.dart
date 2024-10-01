@@ -33,11 +33,13 @@ class PostContainer extends StatefulWidget {
 class _PostContainerState extends State<PostContainer> {
   String myId = '';
   bool _isLiked = false; // 좋아요 상태를 저장하는 변수
+  String? profile_image_url = '';
 
   @override
   void initState() {
     super.initState();
     _initializePreferences();
+    fetchProfileImageUrl();
   }
 
   Future<void> _initializePreferences() async {
@@ -47,6 +49,22 @@ class _PostContainerState extends State<PostContainer> {
       print('Decoded Token: $myId');
       // getTokenExpiryDate(token) 호출 필요 없음
       _isLiked = widget.post.likedUsersId.contains(myId); // 초기화
+    });
+  }
+
+  Future<void> fetchProfileImageUrl() async {
+    // print('profile.dart-fetchMyInfo전: $myId');
+    final decodedInfo = await fetchId(widget.post.userId);
+    // print('profile.dart-fetchMyInfo후: $myId');
+
+    setState(() {
+      // 사용자 정보를 myInfo에 저장
+      if (decodedInfo.isNotEmpty) {
+        profile_image_url = decodedInfo['profile_image_url'];
+      } else {
+        profile_image_url = null;
+      }
+      print('내 프사: $profile_image_url');
     });
   }
 
@@ -147,9 +165,24 @@ class _PostContainerState extends State<PostContainer> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.person),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(100),
+                          child: profile_image_url == null
+                              ? Image.asset(
+                                  'assets/profile.png',
+                                  width: 30,
+                                  height: 30,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.network(
+                                  'http://52.231.106.232:8000$profile_image_url',
+                                  width: 30,
+                                  height: 30,
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
                         SizedBox(width: 8),
-                        Text(post.nickName),
+                        Text(post.nickName, style: TextStyle(fontSize: 16)),
                       ],
                     ),
                     Row(
@@ -261,27 +294,6 @@ class _PostContainerState extends State<PostContainer> {
                       ],
                     )),
               ),
-              // myId == post.userId
-              //     ? Container(
-              //         padding: const EdgeInsets.only(
-              //             left: 25, top: 0, right: 25, bottom: 20),
-              //         child: Row(
-              //           mainAxisAlignment: MainAxisAlignment.end,
-              //           children: [
-              //             TextButton(
-              //                 onPressed: () {
-              //                   // Add functionality for edit
-              //                 },
-              //                 child: Text('수정')),
-              //             TextButton(
-              //                 onPressed: () async {
-              //                   await _deletePostDialog(context);
-              //                 },
-              //                 child: Text('삭제')),
-              //           ],
-              //         ),
-              //       )
-              //     : SizedBox(height: 10) // 빈 공간을 반환
             ],
           ),
           Transform.translate(

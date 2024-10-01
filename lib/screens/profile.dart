@@ -54,15 +54,6 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     fetchPosts();
     _initializePreferences();
-
-    // _scrollController.addListener(() {
-    //   if (_scrollController.position.pixels ==
-    //       _scrollController.position.maxScrollExtent) {
-    //     if (_hasMoreData) {
-    //       _loadMoreItems();
-    //     }
-    //   }
-    // });
   }
 
   Future<void> _initializePreferences() async {
@@ -117,30 +108,21 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-// 추가 이미지를 로드하는 함수
-  // void _loadMoreItems() {
-  //   setState(() {
-  //     int startIndex = _loadedItemCount + 1;
-  //     int endIndex = startIndex + 5;
+//   Future<void> _navigateFromPostEditPage(BuildContext context) async {
+//   // Navigator.push로 페이지 이동
+//     final shouldRefresh = await Navigator.push(
+//       context,
+//       MaterialPageRoute(builder: (context) => PostEditPage(post:post)),
+//     );
 
-  //     // 서버에서 불러올 수 있는 최대 이미지 개수가 10개인 경우
-  //     if (endIndex > 10) {
-  //       endIndex = 10;
-  //       _hasMoreData = false; // 더 이상 불러올 데이터가 없음을 표시
-  //     }
+//   // ProfileEditPage에서 반환된 값이 true일 경우 새로 고침
+//   if (shouldRefresh == true) {
+//     setState(() async{
+//       await fetchPosts();
+//     });
 
-  //     for (int i = startIndex; i <= endIndex; i++) {
-  //       _images[_selectedTab].add('assets/uploaded_$i.png');
-  //     }
-
-  //     _loadedItemCount += (endIndex - startIndex + 1);
-
-  //     // 만약 모든 데이터를 로드했다면, 더 이상 로드하지 않음
-  //     if (_loadedItemCount >= 10) {
-  //       _hasMoreData = false;
-  //     }
-  //   });
-  // }
+//   }
+// }
 
   File? _profileImage;
   bool _isUploading = false; // 업로드 상태 관리
@@ -224,8 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // 서버에 이미지 업로드 함수
   Future<void> uploadProfileImage(File imageFile, BuildContext context) async {
     // 서버 엔드포인트 URL (실제 URL로 변경 필요)
-    final String uploadUrl =
-        '$apiUrl/api/user/profile_image';
+    final String uploadUrl = '$apiUrl/api/user/profile_image';
 
     try {
       // HTTP 요청을 위한 MultipartRequest 생성
@@ -296,8 +277,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // 서버에 이미지 업로드 함수
   Future<void> resetProfileImage(BuildContext context) async {
     // 서버 엔드포인트 URL
-    final String uploadUrl =
-        '$apiUrl/api/user/profile_image';
+    final String uploadUrl = '$apiUrl/api/user/profile_image';
 
     try {
       // HTTP 요청을 위한 MultipartRequest 생성
@@ -516,12 +496,19 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
-                                child: Image.network(
-                                  '$apiUrl$profile_image_url',
-                                  width: 180,
-                                  height: 180,
-                                  fit: BoxFit.cover,
-                                ),
+                                child: profile_image_url == null
+                                    ? Image.asset(
+                                        'assets/profile.png',
+                                        width: 180,
+                                        height: 180,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.network(
+                                        '$apiUrl$profile_image_url',
+                                        width: 180,
+                                        height: 180,
+                                        fit: BoxFit.cover,
+                                      ),
                               ),
                             ),
                           ),
@@ -651,8 +638,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: Container(
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: NetworkImage(
-                                  '$apiUrl${fileUrls[0]}'),
+                              image: NetworkImage('$apiUrl${fileUrls[0]}'),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -660,12 +646,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       );
                     },
                   ),
-                  // if (_loadedItemCount < _images[_selectedTab].length)
-                  //   Padding(
-                  //     padding: EdgeInsets.all(16.0),
-                  //     child: CircularProgressIndicator(),
-                  //   ),
-                  // if (_loadedItemCount == 0) Text('로드할데이터없음')
                 ],
               ),
             ),

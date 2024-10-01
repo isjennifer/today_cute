@@ -77,6 +77,7 @@ class _PostEditPageState extends State<PostEditPage> {
         SnackBar(content: Text('게시물이 수정되었습니다.')),
       );
       Navigator.pop(context); // 화면을 종료
+      Navigator.pop(context); // 이전 화면으로 이동
     } else {
       // 수정 실패 처리
       print('Fail Response: ${response.statusCode}');
