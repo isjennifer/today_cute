@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:today_cute/config.dart';
 import 'package:today_cute/screens/alarm.dart';
 import 'package:today_cute/screens/upload.dart';
 import 'screens/home.dart';
@@ -22,7 +23,7 @@ void main() async {
   KakaoSdk.init(
     nativeAppKey: 'fa34c75614ac318d63f7b6cd77ec9dfb',
   );
-
+  print('!!!!!!!!!!!!!!$apiUrl');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // FCM 토큰 초기화 및 서버에 전송

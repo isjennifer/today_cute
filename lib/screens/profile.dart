@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:today_cute/config.dart';
 import 'setting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -224,7 +225,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> uploadProfileImage(File imageFile, BuildContext context) async {
     // 서버 엔드포인트 URL (실제 URL로 변경 필요)
     final String uploadUrl =
-        'http://52.231.106.232:8000/api/user/profile_image';
+        '$apiUrl/user/profile_image';
 
     try {
       // HTTP 요청을 위한 MultipartRequest 생성
@@ -296,7 +297,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> resetProfileImage(BuildContext context) async {
     // 서버 엔드포인트 URL
     final String uploadUrl =
-        'http://52.231.106.232:8000/api/user/profile_image';
+        '$apiUrl/user/profile_image';
 
     try {
       // HTTP 요청을 위한 MultipartRequest 생성

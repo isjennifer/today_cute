@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'; // UserApi를 위한 임포트 추가
 import 'package:flutter/services.dart';
+import 'package:today_cute/config.dart';
 import 'package:today_cute/services/api_service.dart';
 import 'package:today_cute/widgets/comment_drawer.dart';
 import '../main.dart';
@@ -64,7 +65,7 @@ class LoginPage extends StatelessWidget {
       // 서버에 카카오 토큰 전송
       final response = await http.post(
         // Uri.parse('http://10.0.2.2:8000/api/auth/login/kakao'),
-        Uri.parse('http://52.231.106.232:8000/api/auth/login/kakao'),
+        Uri.parse('$apiUrl/auth/login/kakao'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

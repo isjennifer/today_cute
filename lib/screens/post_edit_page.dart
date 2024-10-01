@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:today_cute/config.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
@@ -54,7 +55,7 @@ class _PostEditPageState extends State<PostEditPage> {
     }
 
     final uri = Uri.parse(
-        'http://52.231.106.232:8000/api/post/${widget.post.id}'); // 서버 주소
+        '$apiUrl/post/${widget.post.id}'); // 서버 주소
     var request = http.Request('PUT', uri);
     request.headers['Authorization'] = 'Bearer $accessToken';
     request.headers['Content-Type'] = 'application/json';

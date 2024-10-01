@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:today_cute/config.dart';
 import 'package:today_cute/models/comment.dart';
 import '../utils/expandable_text.dart';
 import 'package:http/http.dart' as http;
@@ -83,7 +84,7 @@ class _CommentDrawerState extends State<CommentDrawer> {
     }
 
     final url = Uri.parse(
-        'http://52.231.106.232:8000/api/post/${widget.postId}/comment'); // 실제 서버 URL로 변경
+        '$apiUrl/post/${widget.postId}/comment'); // 실제 서버 URL로 변경
     final body = jsonEncode({
       'content': commentText, // 필요한 데이터로 수정
     });
