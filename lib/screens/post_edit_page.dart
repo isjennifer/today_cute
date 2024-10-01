@@ -55,7 +55,7 @@ class _PostEditPageState extends State<PostEditPage> {
     }
 
     final uri = Uri.parse(
-        '$apiUrl/post/${widget.post.id}'); // 서버 주소
+        '$apiUrl/api/post/${widget.post.id}'); // 서버 주소
     var request = http.Request('PUT', uri);
     request.headers['Authorization'] = 'Bearer $accessToken';
     request.headers['Content-Type'] = 'application/json';

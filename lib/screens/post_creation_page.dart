@@ -117,7 +117,7 @@ class _PostCreationPageState extends State<PostCreationPage> {
       return;
     }
 
-    final uri = Uri.parse('$apiUrl/post/'); // 서버 주소
+    final uri = Uri.parse('$apiUrl/api/post/'); // 서버 주소
 
     var request = http.MultipartRequest('POST', uri);
     request.headers['Authorization'] = 'Bearer $accessToken';

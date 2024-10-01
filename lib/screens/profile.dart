@@ -225,7 +225,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> uploadProfileImage(File imageFile, BuildContext context) async {
     // 서버 엔드포인트 URL (실제 URL로 변경 필요)
     final String uploadUrl =
-        '$apiUrl/user/profile_image';
+        '$apiUrl/api/user/profile_image';
 
     try {
       // HTTP 요청을 위한 MultipartRequest 생성
@@ -297,7 +297,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> resetProfileImage(BuildContext context) async {
     // 서버 엔드포인트 URL
     final String uploadUrl =
-        '$apiUrl/user/profile_image';
+        '$apiUrl/api/user/profile_image';
 
     try {
       // HTTP 요청을 위한 MultipartRequest 생성
@@ -517,7 +517,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
                                 child: Image.network(
-                                  'http://52.231.106.232:8000$profile_image_url',
+                                  '$apiUrl$profile_image_url',
                                   width: 180,
                                   height: 180,
                                   fit: BoxFit.cover,
@@ -652,7 +652,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           decoration: BoxDecoration(
                             image: DecorationImage(
                               image: NetworkImage(
-                                  'http://52.231.106.232:8000${fileUrls[0]}'),
+                                  '$apiUrl${fileUrls[0]}'),
                               fit: BoxFit.cover,
                             ),
                           ),

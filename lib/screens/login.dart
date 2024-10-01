@@ -65,7 +65,7 @@ class LoginPage extends StatelessWidget {
       // 서버에 카카오 토큰 전송
       final response = await http.post(
         // Uri.parse('http://10.0.2.2:8000/api/auth/login/kakao'),
-        Uri.parse('$apiUrl/auth/login/kakao'),
+        Uri.parse('$apiUrl/api/auth/login/kakao'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

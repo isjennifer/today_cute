@@ -9,7 +9,7 @@ import '../models/comment.dart';
 Future<List<Post>> fetchPostData() async {
   try {
     final response = await http.get(
-      Uri.parse('$apiUrl/post/'),
+      Uri.parse('$apiUrl/api/post/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -62,7 +62,7 @@ Future<void> deletePostData(
   print('deletePostData: $token');
   try {
     final response = await http.delete(
-      Uri.parse('$apiUrl/post/$postId'),
+      Uri.parse('$apiUrl/api/post/$postId'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token', // Authorization 헤더 추가
@@ -91,7 +91,7 @@ Future<void> PutPostData(
   print('deletePostData: $token');
   try {
     final response = await http.put(
-      Uri.parse('$apiUrl/post/$postId'),
+      Uri.parse('$apiUrl/api/post/$postId'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token', // Authorization 헤더 추가
@@ -120,7 +120,7 @@ Future<Map<String, dynamic>> fetchId(String id) async {
   try {
     print('fetchId:$id');
     final response = await http.get(
-      Uri.parse('$apiUrl/user/$id'),
+      Uri.parse('$apiUrl/api/user/$id'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -145,7 +145,7 @@ Future<Map<String, dynamic>> fetchId(String id) async {
 Future<List<Comment>> fetchCommentData(String postId) async {
   try {
     final response = await http.get(
-      Uri.parse('$apiUrl/post/$postId/comments'),
+      Uri.parse('$apiUrl/api/post/$postId/comments'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -168,7 +168,7 @@ Future<List<Comment>> fetchCommentData(String postId) async {
 Future<List<Post>> fetchPopularPostData() async {
   try {
     final response = await http.get(
-      Uri.parse('$apiUrl/post/popular'),
+      Uri.parse('$apiUrl/api/post/popular'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -191,7 +191,7 @@ Future<void> likePost(
     BuildContext context, String postId, String? token) async {
   try {
     final response = await http.post(
-      Uri.parse('$apiUrl/post/$postId/like'),
+      Uri.parse('$apiUrl/api/post/$postId/like'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
@@ -217,7 +217,7 @@ Future<void> createFCMTokenData(
     BuildContext context, String accessToken, String fcmToken) async {
   try {
     final response = await http.post(
-      Uri.parse('$apiUrl/auth/fcmtoken'),
+      Uri.parse('$apiUrl/api/auth/fcmtoken'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $accessToken',

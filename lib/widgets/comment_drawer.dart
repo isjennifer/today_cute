@@ -84,7 +84,7 @@ class _CommentDrawerState extends State<CommentDrawer> {
     }
 
     final url = Uri.parse(
-        '$apiUrl/post/${widget.postId}/comment'); // 실제 서버 URL로 변경
+        '$apiUrl/api/post/${widget.postId}/comment'); // 실제 서버 URL로 변경
     final body = jsonEncode({
       'content': commentText, // 필요한 데이터로 수정
     });

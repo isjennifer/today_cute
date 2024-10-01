@@ -72,7 +72,7 @@ class _CommentContainerState extends State<CommentContainer> {
     }
 
     final url = Uri.parse(
-        '$apiUrl/post/comment/$commentId'); // 실제 서버 URL로 변경
+        '$apiUrl/api/post/comment/$commentId'); // 실제 서버 URL로 변경
     final body = jsonEncode({
       'content': commentText, // 필요한 데이터로 수정
     });

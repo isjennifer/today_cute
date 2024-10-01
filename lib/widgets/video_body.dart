@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:today_cute/config.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../utils/expandable_text.dart';
@@ -19,7 +20,7 @@ class _VideoBodyState extends State<VideoBody> {
   void initState() {
     super.initState();
     _videoController = VideoPlayerController.networkUrl(
-        Uri.parse('http://52.231.106.232:8000${widget.fileUrl}'))
+        Uri.parse('$apiUrl${widget.fileUrl}'))
       ..initialize().then((_) {
         setState(() {});
         _videoController.setLooping(true);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:today_cute/config.dart';
 import '../utils/expandable_text.dart';
 import 'comment_drawer.dart';
 import 'package:http/http.dart' as http;
@@ -117,7 +118,7 @@ class _PostContainerState extends State<PostContainer> {
                             itemBuilder: (context, index) {
                               final url = fileUrls[index];
                               return Image.network(
-                                'http://52.231.106.232:8000$url',
+                                '$apiUrl$url',
                               );
                             },
                           )),
