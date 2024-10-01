@@ -20,15 +20,18 @@ class ImageBody extends StatefulWidget {
 }
 
 class _ImageBodyState extends State<ImageBody> {
+  late ScrollController _scrollController;
   List<Post> posts = [];
+  final int _maxLength = 10;
 
-  @override
-  void initState() {
-    super.initState();
-    fetchPosts();
-  }
+  int page = 1;
+  bool isLoading = false;
+  bool hasMore = true;
 
   Future<void> fetchPosts() async {
+    setState(() {
+      isLoading = true;
+    });
     final postList =
         await fetchPostData(); // api_service.dart의 fetchPostData 호출
     setState(() {
@@ -36,6 +39,34 @@ class _ImageBodyState extends State<ImageBody> {
       print('postList:$postList');
       posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     });
+    setState(() {
+      isLoading = false;
+      page = page + 1;
+      hasMore = posts.length < _maxLength;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPosts();
+
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent * 0.95 &&
+          !isLoading) {
+        if (hasMore) {
+          fetchPosts();
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -43,14 +74,21 @@ class _ImageBodyState extends State<ImageBody> {
     return posts.isEmpty
         ? Center(child: CircularProgressIndicator())
         : ListView.builder(
+            controller: _scrollController,
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
-            itemCount: posts.length,
+            itemCount: posts.length * (hasMore ? 1 : 0),
             itemBuilder: (context, index) {
+              if (index == posts.length) {
+                return const SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: FittedBox(child: CircularProgressIndicator()),
+                );
+              }
               final post = posts[index];
               return PostContainer(
                 post: post,
-                // onDelete: () => _deletePost(post.id), // 삭제 콜백 함수 전달
               );
             },
           );
