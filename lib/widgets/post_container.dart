@@ -175,7 +175,7 @@ class _PostContainerState extends State<PostContainer> {
                                   fit: BoxFit.cover,
                                 )
                               : Image.network(
-                                  'http://52.231.106.232:8000$profile_image_url',
+                                  '$apiUrl$profile_image_url',
                                   width: 30,
                                   height: 30,
                                   fit: BoxFit.cover,

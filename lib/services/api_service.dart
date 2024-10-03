@@ -32,7 +32,7 @@ Future<List<Post>> searchPostData(
     {String? search, String sortBy = 'created_at'}) async {
   try {
     // 쿼리 파라미터를 포함한 URI 생성
-    final uri = Uri.http('52.231.106.232:8000', '/api/post/search', {
+    final uri = Uri.http(apiUrl, '/api/post/search', {
       'search': search ?? '', // 검색어가 없으면 빈 값 전달
       'sort_by': sortBy, // 정렬 기준 (created_at 또는 likes)
     });

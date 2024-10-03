@@ -19,14 +19,15 @@ class _VideoBodyState extends State<VideoBody> {
   @override
   void initState() {
     super.initState();
-    _videoController = VideoPlayerController.networkUrl(
-        Uri.parse('$apiUrl${widget.fileUrl}'))
-      ..initialize().then((_) {
-        setState(() {});
-        _videoController.setLooping(true);
-      }).catchError((error) {
-        print('Error initializing video player: $error');
-      });
+
+    _videoController =
+        VideoPlayerController.networkUrl(Uri.parse('$apiUrl${widget.fileUrl}'))
+          ..initialize().then((_) {
+            setState(() {});
+            _videoController.setLooping(true);
+          }).catchError((error) {
+            print('Error initializing video player: $error');
+          });
 
     _videoController.addListener(() {
       if (_videoController.value.isInitialized) {
