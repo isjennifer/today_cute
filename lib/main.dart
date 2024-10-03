@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:today_cute/config.dart';
 import 'package:today_cute/screens/alarm.dart';
 import 'package:today_cute/screens/upload.dart';
@@ -26,8 +27,8 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // FCM 토큰 초기화 및 서버에 전송
-  //await _initializeFCM();
+  // admob 초기화
+  MobileAds.instance.initialize();
 
   // 백그라운드 알림 처리 설정
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -131,6 +132,8 @@ class PageFrame extends StatefulWidget {
 class _HomePageState extends State<PageFrame> {
   int _selectedIndex = 0;
   bool _hasNewNotification = false; // 새로운 알림이 있는지 여부
+  late RewardedAd _rewardedAd;
+  bool _isAdLoaded = false;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -152,6 +155,7 @@ class _HomePageState extends State<PageFrame> {
   void initState() {
     super.initState();
 
+    _loadRewardedAd();
     _initializePreferences();
 
     // 포그라운드 알림 처리
@@ -242,6 +246,45 @@ class _HomePageState extends State<PageFrame> {
         );
       },
     );
+  }
+
+  void _loadRewardedAd() {
+    RewardedAd.load(
+      adUnitId: 'ca-app-pub-3940256099942544/5224354917', // 테스트 광고 유닛 ID
+      request: AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (RewardedAd ad) {
+          setState(() {
+            _rewardedAd = ad;
+            _isAdLoaded = true;
+          });
+          print('Rewarded Ad Loaded');
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          print('Rewarded Ad Failed to Load: $error');
+        },
+      ),
+    );
+  }
+
+  void _showRewardedAd(String accessToken) {
+    if (_isAdLoaded) {
+      _rewardedAd.show(
+        onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+          // 사용자가 보상을 받을 때 실행되는 코드
+          getReward(context, accessToken);
+          print('User earned reward: ${reward.amount} ${reward.type}');
+        },
+      );
+    } else {
+      print('Ad is not yet loaded');
+    }
+  }
+
+  @override
+  void dispose() {
+    _rewardedAd.dispose(); // 광고 자원을 해제
+    super.dispose();
   }
 
   @override
@@ -345,7 +388,7 @@ class _HomePageState extends State<PageFrame> {
                                     await SharedPreferences.getInstance();
                                 final token =
                                     prefs.getString('accessToken') ?? '';
-                                    print('토큰토큰$token');
+                                print('토큰토큰$token');
                                 // 출석체크 액션 처리
                                 if (context.mounted) {
                                   await checkIn(context, token);
@@ -357,8 +400,16 @@ class _HomePageState extends State<PageFrame> {
                             ),
                             SizedBox(height: 5),
                             ElevatedButton.icon(
-                              onPressed: () {
-                                // 광고시청 액션 처리
+                              onPressed: () async {
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                final token =
+                                    prefs.getString('accessToken') ?? '';
+                                print('토큰토큰: $token');
+                                if (_isAdLoaded) {
+                                  _showRewardedAd(token); // 토큰을 주입하여 함수 호출
+                                  // TODO 보상성공시 사용자 정보 다시 가져와야함 
+                                }
                               },
                               icon: Icon(Icons.video_camera_back),
                               label: Text('광고시청'),

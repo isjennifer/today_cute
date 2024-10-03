@@ -289,3 +289,34 @@ Future<void> checkIn(BuildContext context, String? token) async {
     }
   }
 }
+
+
+Future<void> getReward(BuildContext context, String? token) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$apiUrl/api/user/reward'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      // 광고 보상 성공 처리
+      print('광고 보상 성공');
+    } else {
+      // 오류 처리
+      print('광고 보상 실패 ${response.body}');
+      if (context.mounted) {
+        // UI 업데이트 로직
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('광고 보상 실패')));
+      }
+    }
+  } catch (e) {
+    print('Error: $e');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+}
