@@ -132,6 +132,7 @@ class PageFrame extends StatefulWidget {
 class _HomePageState extends State<PageFrame> {
   int _selectedIndex = 0;
   bool _hasNewNotification = false; // 새로운 알림이 있는지 여부
+  List<RemoteMessage> _notifications = []; // 수신된 알림 리스트
   late RewardedAd _rewardedAd;
   bool _isAdLoaded = false;
 
@@ -142,12 +143,6 @@ class _HomePageState extends State<PageFrame> {
         // AlarmPage에 들어가면
         _hasNewNotification = false; // 알림 아이콘 상태 초기화
       }
-    });
-  }
-
-  void _updateNotificationStatus() {
-    setState(() {
-      _hasNewNotification = true; // 새로운 알림이 도착하면 상태 업데이트
     });
   }
 
@@ -164,12 +159,25 @@ class _HomePageState extends State<PageFrame> {
 
       // 알림 상태 업데이트
       setState(() {
-        _hasNewNotification = true; // 알림 도착 표시
+        _hasNewNotification = true; // 새로운 알림이 도착하면 상태 업데이트
+        _notifications.add(message);
       });
 
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
       }
+    });
+  }
+
+  void _clearParentNotifications() {
+    setState(() {
+      _notifications.clear(); // 알림 리스트 초기화
+    });
+  }
+
+  void _resetNewNotificationStatus() {
+    setState(() {
+      _hasNewNotification = false; // 새로운 알림 여부 초기화
     });
   }
 
@@ -293,7 +301,11 @@ class _HomePageState extends State<PageFrame> {
       HomePage(),
       SearchPage(),
       UploadPage(),
-      AlarmPage(onNewNotification: _updateNotificationStatus),
+      AlarmPage(
+        notifications: _notifications, // 알림 데이터 전달
+        onResetNotificationStatus: _resetNewNotificationStatus,
+        onClearNotifications: _clearParentNotifications,
+      ),
       ProfilePage(),
       // RegisterPage()
     ];
@@ -408,7 +420,7 @@ class _HomePageState extends State<PageFrame> {
                                 print('토큰토큰: $token');
                                 if (_isAdLoaded) {
                                   _showRewardedAd(token); // 토큰을 주입하여 함수 호출
-                                  // TODO 보상성공시 사용자 정보 다시 가져와야함 
+                                  // TODO 보상성공시 사용자 정보 다시 가져와야함
                                 }
                               },
                               icon: Icon(Icons.video_camera_back),

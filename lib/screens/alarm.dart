@@ -4,9 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AlarmPage extends StatefulWidget {
-  final VoidCallback onNewNotification;
+  final List<RemoteMessage> notifications;
+  final VoidCallback onResetNotificationStatus;
+  final VoidCallback onClearNotifications;
 
-  const AlarmPage({super.key, required this.onNewNotification});
+  const AlarmPage(
+      {super.key,
+      required this.onResetNotificationStatus,
+      required this.notifications,
+      required this.onClearNotifications});
 
   @override
   _AlarmPageState createState() => _AlarmPageState();
@@ -19,12 +25,33 @@ class _AlarmPageState extends State<AlarmPage> {
   @override
   void initState() {
     super.initState();
+    // 위젯이 빌드된 후 상태를 변경
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onResetNotificationStatus(); // 빌드 완료 후 알림 상태를 리셋
+      _loadNotifications(); // 알림 로드
+    });
+  }
+
+  void _loadNotifications() {
+    // 알림을 AlarmBoard로 변환하여 _alarms에 추가
+    setState(() {
+      _alarms = widget.notifications.map((notification) {
+        return AlarmBoard(
+          title: notification.notification?.title ?? '알림 제목 없음',
+          body: notification.notification?.body ?? '알림 내용 없음',
+        );
+      }).toList();
+
+      // 알림을 확인했으므로 새로운 알림 여부를 false로 설정
+      _hasNewNotification = false;
+    });
   }
 
   void _clearAllNotifications() {
     setState(() {
       _alarms.clear();
     });
+    widget.onClearNotifications(); // 부모의 알림 리스트 초기화
   }
 
   @override
@@ -67,7 +94,14 @@ class _AlarmPageState extends State<AlarmPage> {
 }
 
 class AlarmBoard extends StatelessWidget {
-  const AlarmBoard({super.key});
+  final String title;
+  final String body;
+
+  const AlarmBoard({
+    required this.title,
+    required this.body,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -110,16 +144,10 @@ class AlarmBoard extends StatelessWidget {
               children: [
                 Row(children: [
                   Icon(Icons.person),
-                  Text('귀여운게 최고야 님이'),
+                  Text(title),
                 ]),
                 Row(children: [
-                  Text('회원님의 게시물을 '),
-                  Icon(
-                    Icons.favorite,
-                    size: 17,
-                    color: Colors.pink,
-                  ),
-                  Text('좋아합니다.'),
+                  Text(body),
                 ]),
               ],
             ),
